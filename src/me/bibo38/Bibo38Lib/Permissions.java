@@ -68,10 +68,22 @@ public class Permissions
 		boolean erg = false;
 		if(main.vaultOn && !this.vaultError())
 		{
-			erg = perm.has(player, father + permstr);
+			if(perm.has(player, father + permstr) || perm.has(player, father + "*") || perm.has(player, "*.*"))
+			{
+				erg = true;
+			} else
+			{
+				erg = false;
+			}
 		} else
 		{
-			erg = player.hasPermission(father + permstr);
+			if(player.hasPermission(father + permstr) || player.hasPermission(father + "*") || player.hasPermission("*.*"))
+			{
+				erg = true;
+			} else
+			{
+				erg = false;
+			}
 		}
 		
 		if(!erg && showError) // Falls es nicht erlaubt ist!
