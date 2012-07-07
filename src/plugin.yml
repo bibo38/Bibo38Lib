@@ -2,4 +2,4 @@ name: Bibo38Lib
 main: me.bibo38.Bibo38Lib.Bibo38Lib
 version: 0.5
 author: bibo38
-softdepend: [Vault, SpoutPlugin]
+softdepend: [Vault, Spout]

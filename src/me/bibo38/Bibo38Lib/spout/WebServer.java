@@ -1,0 +1,180 @@
+package me.bibo38.Bibo38Lib.spout;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+public class WebServer extends Thread
+{
+	private File mainDir;
+	private int port;
+	
+	private ServerSocket server;
+	private boolean stopserver = false;
+	
+	/**
+	 * Der Konstruktor des WebServers
+	 * 
+	 * @param eport Der Port des Servers! 0 ist ein zufälliger Port
+	 * @param emainDir Der Hauptordner des Web-Servers
+	 * @throws IOException Bei Fehlern, z.B. schon benutzter Port
+	 */
+	public WebServer(int eport, File emainDir) throws IOException
+	{
+		mainDir = emainDir;
+		
+		server = new ServerSocket(eport);
+		port = server.getLocalPort();
+	}
+	
+	/**
+	 * Den vom Webserver benutzten port zurückliefern lassen!
+	 * 
+	 * @return Der Port
+	 */
+	public int getPort()
+	{
+		return port;
+	}
+	
+	/**
+	 * Die IP-Adresse des Servers ermitteln
+	 * 
+	 * @return Einen String mit der Ip-Adresse
+	 */
+	public String getIp()
+	{
+		return server.getInetAddress().getHostAddress();
+	}
+	
+	/**
+	 * Eine Datei auf den Webserver kopieren
+	 * 
+	 * @param in InputStream der Datei
+	 * @param prefix Ein beliebiger Präfix
+	 * @param suffix Der Dateien Suffix (ohne ., sondern nur z.B. png)
+	 * @return Den URL zur hochgeladenen Datei
+	 * @throws IOException Fehler beim Erstellen der Datei
+	 */
+	public String addFile(InputStream in, String prefix, String suffix) throws IOException
+	{
+		// Datei schreiben
+		File file = File.createTempFile(prefix, "." + suffix, mainDir);
+		
+		OutputStream out = new FileOutputStream(file);
+		while(true)
+		{
+			int tmp = in.read();
+			if(tmp < 0)
+			{
+				break;
+			} else
+			{
+				out.write(tmp);
+			}
+		}
+		out.flush();
+		out.close();
+		
+		file.deleteOnExit(); // Am Ende löschen
+		return "http://" + this.getIp() + ":" + this.getPort() + "/" + file.getName();
+	}
+	
+	/**
+	 * Datei vom Web-Server löschen
+	 * 
+	 * @param name Den Namen der Datei
+	 * @return true, falls erfolgreich gelöscht
+	 */
+	public boolean removeFile(String name)
+	{
+		if(!(new File(mainDir, name)).exists())
+		{
+			return false;
+		}
+		
+		new File(mainDir, name).delete();
+		return true;
+	}
+	
+	@Override
+	/**
+	 * Der Web-Server
+	 */
+	public void run() // Mini Web Server :)
+	{
+		while(!stopserver)
+		{
+			// Auf Anfragen warten
+			try
+			{
+				Socket sock = server.accept();
+				
+				BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
+				OutputStream out = sock.getOutputStream();
+				
+				StringBuffer daten = new StringBuffer();
+				while(true)
+				{
+					String tmp = in.readLine();
+					
+					if(tmp == null || tmp.equals("")) // Doppeltes \n?
+					{
+						break;
+					} else
+					{
+						daten.append(tmp + "\n");
+					}
+				}
+				// System.out.println("Empfangen: " + daten.toString());
+				// Bild suchen
+				// Dateinamen finden
+				String datei = daten.toString().split("\n")[0]; // Erste Zeile finden
+				datei = datei.substring(datei.indexOf(" ") + 2); // den / auch mitnehmen
+				datei = datei.substring(0, datei.indexOf(" "));
+								
+				// Zurücksenden
+				if(new File(mainDir, datei).exists())
+				{
+					out.write("HTTP/1.0 200 Ok\r\n\r\n".getBytes());
+					
+					// Datei zurückgeben
+					InputStream orgin = new FileInputStream(new File(mainDir, datei));
+					int tmp;
+					while(true)
+					{
+						if((tmp = orgin.read()) < 0)
+						{
+							break;
+						} else
+						{
+							out.write(tmp);
+						}
+					}
+					
+					orgin.close();
+				} else
+				{
+					out.write("HTTP/1.0 404 Not Found\r\n\r\n".getBytes());
+				}
+				
+				out.flush();
+				sock.shutdownOutput();
+				
+				sock.close();
+			} catch (IOException e)
+			{
+				// Pech gehabt, Fehler beim Abrufen
+				e.printStackTrace();
+			}
+			
+		}
+	}
+}

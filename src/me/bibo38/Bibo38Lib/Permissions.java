@@ -5,10 +5,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
-public class Permissions
+public class Permissions extends Startfunc
 {
-	protected static Bibo38Lib main;
-	
 	private String father; // Der Vater von den Permissions, also das Plugin
 	private net.milkbowl.vault.permission.Permission perm = null; // Um Verwechselung zu vermeiden
 	
@@ -68,7 +66,7 @@ public class Permissions
 		boolean erg = false;
 		if(main.vaultOn && !this.vaultError())
 		{
-			if(perm.has(player, father + permstr) || perm.has(player, father + "*") || perm.has(player, "*.*"))
+			if(perm.has(player, father + permstr) || perm.has(player, father + "*") || perm.has(player, "*"))
 			{
 				erg = true;
 			} else
@@ -77,7 +75,7 @@ public class Permissions
 			}
 		} else
 		{
-			if(player.hasPermission(father + permstr) || player.hasPermission(father + "*") || player.hasPermission("*.*"))
+			if(player.hasPermission(father + permstr) || player.hasPermission(father + "*") || player.hasPermission("*"))
 			{
 				erg = true;
 			} else
