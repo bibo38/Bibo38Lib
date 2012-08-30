@@ -1,8 +1,10 @@
 package me.bibo38.Bibo38Lib;
 
 import org.bukkit.ChatColor;
+import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
 public class Permissions extends Startfunc
@@ -152,5 +154,101 @@ public class Permissions extends Startfunc
 	public String getFather()
 	{
 		return father.substring(0, father.length() - 1);
+	}
+	
+	/**
+	 * F�gt eine Permission einem Player f�r eine
+	 * spezielle Welt hinzu!
+	 * 
+	 * @param player Der Spielername
+	 * @param permission Die Permission
+	 * @param welt Die Welt
+	 */
+	public void addPerm(String player, String permission, World welt)
+	{
+		if(main.vaultOn)
+		{
+			perm.playerAdd(welt, player, father + permission);
+		} else
+		{
+			Player spieler = main.getServer().getPlayer(player);
+			
+			PermissionAttachment pattach = spieler.addAttachment(main);
+			pattach.setPermission(father + permission, true);
+			spieler.removeAttachment(pattach);
+		}
+	}
+	
+	/**
+	 * F�gt eine Permission einem Player f�r eine
+	 * spezielle Welt hinzu!
+	 * 
+	 * @param player Der Spielername
+	 * @param permission Die Permission
+	 * @param welt Der Weltenname
+	 */
+	public void addPerm(String player, String permission, String welt)
+	{
+		this.addPerm(player, permission, main.getServer().getWorld(welt));
+	}
+	
+	/**
+	 * F�gt eine globale Permissions f�r
+	 * einen Player hinzu
+	 * 
+	 * @param player Der Spielername
+	 * @param permission Die Permission
+	 */
+	public void addPerm(String player, String permission)
+	{
+		this.addPerm(player, permission, (World) null);
+	}
+	
+	/**
+	 * Entfernt eine Permission eines Players
+	 * f�r eine spezielle Welt!
+	 * 
+	 * @param player Der Spielername
+	 * @param permission Die Permission
+	 * @param welt Die Welt
+	 */
+	public void remPerm(String player, String permission, World welt) // Permission nur auf false setzen nicht l�schen :)
+	{
+		if(main.vaultOn)
+		{
+			perm.playerRemove(welt, player, permission);
+		} else
+		{
+			Player spieler = main.getServer().getPlayer(player);
+			
+			PermissionAttachment pattach = spieler.addAttachment(main);
+			pattach.setPermission(permission, false);
+			spieler.removeAttachment(pattach);
+		}
+	}
+	
+	/**
+	 * Entfernt eine Permission eines Players
+	 * f�r eine spezielle Welt!
+	 * 
+	 * @param player Der Spielername
+	 * @param permission Die Permission
+	 * @param welt Der Weltenname
+	 */
+	public void remPerm(String player, String permission, String welt)
+	{
+		this.remPerm(player, permission, main.getServer().getWorld(welt));
+	}
+	
+	/**
+	 * Entfernt eine globale Permission
+	 * von einen Player!
+	 * 
+	 * @param player Der Spielername
+	 * @param permission Die Permission
+	 */
+	public void remPerm(String player, String permission)
+	{
+		this.remPerm(player, permission, (World) null);
 	}
 }
