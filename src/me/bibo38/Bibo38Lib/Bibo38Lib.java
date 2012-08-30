@@ -41,8 +41,9 @@ public class Bibo38Lib extends JavaPlugin
 			new File(this.getDataFolder(), "cache").mkdirs();
 		}
 		
+		// TODO Warten auf SpoutPlugin Update
 		// Falls Spout aktiviert ist den Spout-Teil aktivieren
-		if(this.getServer().getPluginManager().getPlugin("Spout") != null)
+		if(this.getServer().getPluginManager().getPlugin("Spout") != null || true)
 		{
 			log.info("Activate Spout things :-)");
 			try

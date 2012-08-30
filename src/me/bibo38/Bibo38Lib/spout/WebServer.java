@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
 
 public class WebServer extends Thread
 {
@@ -18,6 +19,8 @@ public class WebServer extends Thread
 	
 	private ServerSocket server;
 	private boolean stopserver = false;
+	
+	private HashMap<String, WebService> services;
 	
 	/**
 	 * Der Konstruktor des WebServers
@@ -32,6 +35,8 @@ public class WebServer extends Thread
 		
 		server = new ServerSocket(eport);
 		port = server.getLocalPort();
+		services = new HashMap<String, WebService>();
+		services.clear();
 	}
 	
 	/**
@@ -136,12 +141,21 @@ public class WebServer extends Thread
 				// System.out.println("Empfangen: " + daten.toString());
 				// Bild suchen
 				// Dateinamen finden
-				String datei = daten.toString().split("\n")[0]; // Erste Zeile finden
-				datei = datei.substring(datei.indexOf(" ") + 2); // den / auch mitnehmen
-				datei = datei.substring(0, datei.indexOf(" "));
-								
+				if(daten.toString().equals(""))
+				{
+					continue;
+				}
+				System.out.println(daten.toString());
+				Header header = new Header(daten.toString());
+				//System.out.println(header.getFile() + "\n" + header.getMethod() + "\n" + header.getVersion() + "\n" + header.toString());
+				String datei = header.getFile();
+				
 				// Zurücksenden
-				if(new File(mainDir, datei).exists())
+				if(services.containsKey(datei))
+				{
+					// Es gibt den Service, also diesen aufrufen
+					services.get(datei).recive(datei, header, out, sock.getInetAddress());
+				} else if(new File(mainDir, datei).exists())
 				{
 					out.write("HTTP/1.0 200 Ok\r\n\r\n".getBytes());
 					
@@ -174,7 +188,48 @@ public class WebServer extends Thread
 				// Pech gehabt, Fehler beim Abrufen
 				e.printStackTrace();
 			}
+		}
+	}
+	
+	/**
+	 * Registriert einen Service
+	 * 
+	 * @param file Die Datei, bei der der Service aktiviert werden soll
+	 * @param service Der WebService
+	 * @return true bei erfolgreicher Registrierung
+	 */
+	public boolean registerService(String file, WebService service)
+	{
+		if(services.containsKey(file))
+		{
+			return false;
+		}
+		
+		services.put(file, service); // WebService registrieren
+		
+		return true;
+	}
+	
+	public static Header acceptCORS(Header header)
+	{
+		// CORS behandeln und akzeptieren, sodass Content gesendet werden darf
+		// https://developer.mozilla.org/en-US/docs/HTTP_access_control
+		// Ersteinmal prüfen
+		System.out.println(header.getMethod());
+		if(header.getMethod().equals("OPTIONS"))
+		{
+			// Ok, klappt
+			// neuen Header erstellen
+			Header neuhead = new Header(200, 1.0);
+			neuhead.setHeader("Access-Control-Allow-Origin", header.getHeader("Origin"));
+			neuhead.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+			neuhead.setHeader("Access-Control-Allow-Headers", header.getHeader("Access-Control-Request-Headers"));
+			neuhead.setHeader("Access-Control-Max-Age", "1728000");
 			
+			return neuhead;
+		} else
+		{
+			return null;
 		}
 	}
 }

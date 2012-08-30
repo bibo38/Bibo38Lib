@@ -22,7 +22,7 @@ public class Spout extends Startfunc
 	public Spout(File dir) throws IOException
 	{
 		// Den Webserver zum Laufen bekommen
-		server = new WebServer(0, dir); // Zufälliger Port
+		server = new WebServer(2345, dir); // Zufälliger Port
 		server.start();
 		main.getLogger().info("Started WebServer on Port " + server.getPort());
 	}

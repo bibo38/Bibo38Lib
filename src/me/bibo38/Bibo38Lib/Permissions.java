@@ -143,4 +143,14 @@ public class Permissions extends Startfunc
 			return true;
 		}
 	}
+	
+	/**
+	 * Funktion zum Ermitteln des Permission Vaters
+	 * 
+	 * @return Der Vater String
+	 */
+	public String getFather()
+	{
+		return father.substring(0, father.length() - 1);
+	}
 }
