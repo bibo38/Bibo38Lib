@@ -145,7 +145,7 @@ public class WebServer extends Thread
 				{
 					continue;
 				}
-				System.out.println(daten.toString());
+				// System.out.println(daten.toString());
 				Header header = new Header(daten.toString());
 				//System.out.println(header.getFile() + "\n" + header.getMethod() + "\n" + header.getVersion() + "\n" + header.toString());
 				String datei = header.getFile();
@@ -215,7 +215,7 @@ public class WebServer extends Thread
 		// CORS behandeln und akzeptieren, sodass Content gesendet werden darf
 		// https://developer.mozilla.org/en-US/docs/HTTP_access_control
 		// Ersteinmal prüfen
-		System.out.println(header.getMethod());
+		
 		if(header.getMethod().equals("OPTIONS"))
 		{
 			// Ok, klappt
