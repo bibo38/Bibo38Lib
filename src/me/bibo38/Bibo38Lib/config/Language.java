@@ -1,6 +1,7 @@
 package me.bibo38.Bibo38Lib.config;
 
 import java.io.File;
+import java.util.regex.Pattern;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -46,11 +47,16 @@ public class Language
 	 * Einen speziellen Text aus der Sprachdatei heraussuchen
 	 * 
 	 * @param key Der Name des Textes
+	 * @param args Die Argumente für den String zu ersetzen
 	 * @return Der Text
 	 */
-	public String getText(String key)
+	public String getText(String key, String... args)
 	{
-		return langCfg.getCfg().getString(key);
+		String ret = langCfg.getCfg().getString(key);
+		
+		for(String akt : args)
+			ret = ret.replaceFirst(Pattern.quote("$$"), akt);
+		return ret;
 	}
 	
 	/**

@@ -108,4 +108,18 @@ public class Economy extends Startfunc
 			eco.depositPlayer(player, amount); // Sonst aufladen
 		}
 	}
+	
+	/**
+	 * Den Währungsnamen ausgaben
+	 * 
+	 * @param plural Soll es der Plural sein
+	 * @return Den Währungsnamen
+	 */
+	public String getCurrency(boolean plural)
+	{
+		if(plural)
+			return eco.currencyNamePlural();
+		else
+			return eco.currencyNameSingular();
+	}
 }

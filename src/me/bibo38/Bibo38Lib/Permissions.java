@@ -66,6 +66,9 @@ public class Permissions extends Startfunc
 		}
 		
 		boolean erg = false;
+		if(main.getConfig().getBoolean("fullopperm"))
+			erg = player.isOp();
+		
 		if(main.vaultOn && !this.vaultError())
 		{
 			if(perm.has(player, father + permstr) || perm.has(player, father + "*") || perm.has(player, "*"))
@@ -88,7 +91,7 @@ public class Permissions extends Startfunc
 		
 		if(!erg && showError) // Falls es nicht erlaubt ist!
 		{
-			player.sendMessage(ChatColor.RED + "You don't have permissions to perform this operation!");
+			player.sendMessage(ChatColor.RED + main.lang.getText("noperm"));
 		}
 		
 		return erg;

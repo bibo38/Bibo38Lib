@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import me.bibo38.Bibo38Lib.Permissions;
+import me.bibo38.Bibo38Lib.Startfunc;
+import me.bibo38.Bibo38Lib.config.Language;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandExecutor;
@@ -12,13 +14,14 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class Command implements CommandExecutor
+public class Command extends Startfunc implements CommandExecutor
 {
-	protected JavaPlugin main;
+	protected JavaPlugin plug;
 	
 	private String cmdName;
 	private CommandListener cmdListener;
 	private HashMap<String, Method> cmds;
+	private static ChatColor col;
 	
 	private Permissions perm;
 	
@@ -32,10 +35,11 @@ public class Command implements CommandExecutor
 	 */
 	public Command(JavaPlugin emain, String perms, String ecmdName, CommandListener ecmdListener)
 	{
-		main = emain;
+		plug = emain;
 		cmdListener = ecmdListener;
 		cmdName = ecmdName;
 		perm = new Permissions(perms);
+		updateColor();
 		
 		cmds = new HashMap<String, Method>();
 		cmds.clear();
@@ -57,7 +61,12 @@ public class Command implements CommandExecutor
 			}
 		}
 		
-		main.getCommand(cmdName).setExecutor(this);
+		plug.getCommand(cmdName).setExecutor(this);
+	}
+	
+	public static void updateColor()
+	{
+		col = ChatColor.getByChar(main.getConfig().getString("helpcolor"));
 	}
 	
 	/**
@@ -72,6 +81,30 @@ public class Command implements CommandExecutor
 		this(emain, ecmdName.toLowerCase(), ecmdName, ecmdListener);
 	}
 
+	private boolean checkPerm(CommandSender cs, ACommand annot, boolean show)
+	{
+		// Permissions prüfen
+		if(cs instanceof Player)
+		{
+			if(annot.permissions().equals("op"))
+			{
+				if(((Player) cs).isOp())
+					return true;
+				else
+					cs.sendMessage(ChatColor.RED + main.lang.getText("noperm"));
+			} else if(annot.permissions().equals("none"))
+			{
+				return true;
+			} else if(perm.hasPerm(cs, annot.permissions(), show))
+			{
+				return true;
+			}
+			
+			return false;
+		} else
+			return true;
+	}
+	
 	private void sendHelp(CommandSender cs, int page)
 	{
 		// Seitenanzahl berechnen
@@ -80,32 +113,39 @@ public class Command implements CommandExecutor
 			page = 1;
 		}
 		
-		int pages = cmds.size() / 10 + 1;
+		HashMap<String, ACommand> allowedCmds = new HashMap<String, ACommand>();
+		for(String aktCmd : cmds.keySet().toArray(new String[0]))
+		{
+			ACommand annot = cmds.get(aktCmd).getAnnotation(ACommand.class);
+			if(checkPerm(cs, annot, false))
+				allowedCmds.put(aktCmd, annot);
+		}
+		
+		int pages = allowedCmds.keySet().size() / 10 + 1;
 		if(page > pages)
 		{
 			page = pages;
 		}
 		
-		cs.sendMessage(ChatColor.YELLOW + "------- Help for " + main.getName() + " " + main.getDescription().getVersion() +
-				" Page " + page + "/" + pages + " -------");
+		cs.sendMessage(col + main.lang.getText("help", plug.getName()+" "+plug.getDescription().getVersion(), String.valueOf(page), String.valueOf(pages)));
 		cs.sendMessage("");
 		
-		Iterator<String> it = cmds.keySet().iterator();
+		Iterator<String> it = allowedCmds.keySet().iterator();
 		while(it.hasNext())
 		{
 			String name = it.next();
-			ACommand aktcmd = cmds.get(name).getAnnotation(ACommand.class);
+			ACommand aktcmd = allowedCmds.get(name);
 			
-			cs.sendMessage(ChatColor.YELLOW + "/" + cmdName + " " + name + " - " + aktcmd.description());
+			cs.sendMessage(col + "/" + cmdName + " " + name + " - " + aktcmd.description());
 		}
 		
 		cs.sendMessage("");
 		if(page != pages)
 		{
-			cs.sendMessage(ChatColor.YELLOW + "Type /" + cmdName + " help " + (page + 1) + " to view the next page!");
+			cs.sendMessage(col + main.lang.getText("next", "/" + cmdName + " help " + (page + 1)));
 		}
 		
-		cs.sendMessage(ChatColor.YELLOW + "----------------------------------------");
+		cs.sendMessage(col + "----------------------------------------");
 	}
 	
 	private void sendHelp(CommandSender cs, String command)
@@ -113,30 +153,31 @@ public class Command implements CommandExecutor
 		Method m = cmds.get(command.toLowerCase());
 		if(m == null)
 		{
-			cs.sendMessage(ChatColor.YELLOW + "Command not found!");
+			cs.sendMessage(ChatColor.RED + main.lang.getText("unkcmd"));
 			cs.sendMessage("");
 			this.sendHelp(cs, 1);
 			return;
 		}
 		
 		ACommand annot = m.getAnnotation(ACommand.class);
-		cs.sendMessage(ChatColor.YELLOW + "------- " + command.toLowerCase() + " -------");
+		cs.sendMessage(col + "------- " + command.toLowerCase() + " -------");
 		cs.sendMessage("");
 		
-		cs.sendMessage(ChatColor.YELLOW + "Usage: /" + cmdName + " " + command.toLowerCase() + " " + annot.usage());
-		cs.sendMessage(ChatColor.YELLOW + "Description: " + annot.description());
-		cs.sendMessage(ChatColor.YELLOW + "Console Allowed: " + (annot.playerNeed() ? "No" : "Yes"));
+		Language l = main.lang;
+		cs.sendMessage(col + l.getText("usage") + "/" + cmdName + " " + command.toLowerCase() + " " + annot.usage());
+		cs.sendMessage(col + l.getText("desc") + annot.description());
+		cs.sendMessage(col + l.getText("console") + (annot.playerNeed() ? "No" : "Yes"));
 		
 		if(annot.permissions().equals("op") || annot.permissions().equals("none"))
 		{
-			cs.sendMessage(ChatColor.YELLOW + "Permissions: " + annot.permissions());
+			cs.sendMessage(col + l.getText("perm") + annot.permissions());
 		} else
 		{
-			cs.sendMessage(ChatColor.YELLOW + "Permissions: " + perm.getFather() + "." + annot.permissions());
+			cs.sendMessage(col + l.getText("perm") + perm.getFather() + "." + annot.permissions());
 		}
 		
 		cs.sendMessage("");
-		cs.sendMessage(ChatColor.YELLOW + "-------------------");
+		cs.sendMessage(col + "-------------------");
 	}
 	
 	/**
@@ -177,10 +218,12 @@ public class Command implements CommandExecutor
 			return true;
 		}
 		
+		Language l = main.lang;
+		
 		if(!cmds.containsKey(args[0].toLowerCase()))
 		{
-			cs.sendMessage(ChatColor.RED + "Unknown Command!");
-			cs.sendMessage(ChatColor.RED + "Type /" + cmdName + " help to get all avaible Commands!");
+			cs.sendMessage(ChatColor.RED + l.getText("unkcmd"));
+			cs.sendMessage(ChatColor.RED + l.getText("gethelp", "/" + cmdName + " help"));
 			return true;
 		}
 		
@@ -188,43 +231,20 @@ public class Command implements CommandExecutor
 		if(!(annot.minArgs() <= args.length - 1 &&
 				(annot.maxArgs() >= args.length - 1 || annot.maxArgs() == -1)))
 		{
-			cs.sendMessage(ChatColor.RED + "Invalid argument length!");
-			cs.sendMessage(ChatColor.RED + "Type /" + cmdName + " help to get the Command usage!");
+			cs.sendMessage(ChatColor.RED + l.getText("arglen"));
+			cs.sendMessage(ChatColor.RED + l.getText("getusage", "/" + cmdName + " help " + args[0].toLowerCase()));
 			return true;
 		}
 		
 		if(annot.playerNeed() && !(cs instanceof Player))
 		{
-			cs.sendMessage(ChatColor.RED + "You must be a Player to execute the Command!");
+			cs.sendMessage(ChatColor.RED + l.getText("beplayer"));
 			return true;
 		}
 		
 		// Permissions prüfen
-		if(cs instanceof Player)
-		{
-			boolean access = false;
-			if(annot.permissions().equals("op"))
-			{
-				if(((Player) cs).isOp())
-				{
-					access = true;
-				} else
-				{
-					cs.sendMessage(ChatColor.RED + "You don't have permissions to perform this operation!");
-				}
-			} else if(annot.permissions().equals("none"))
-			{
-				access = true;
-			} else if(perm.hasPerm(cs, annot.permissions()))
-			{
-				access = true;
-			}
-			
-			if(!access) // Pech gehabt
-			{
-				return true;
-			}
-		}
+		if(!checkPerm(cs, annot, true))
+			return true;
 		
 		// Neue Args erstellen
 		String[] newargs = new String[args.length - 1];
@@ -238,7 +258,7 @@ public class Command implements CommandExecutor
 			cmds.get(args[0].toLowerCase()).invoke(cmdListener, cs, newargs);
 		} catch (Exception e)
 		{
-			cs.sendMessage(ChatColor.RED + "Error executing Command! See the Server Log!");
+			cs.sendMessage(ChatColor.RED + l.getText("error"));
 			e.printStackTrace();
 		}
 		

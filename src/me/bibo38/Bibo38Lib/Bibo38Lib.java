@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
 
+import me.bibo38.Bibo38Lib.command.Command;
+import me.bibo38.Bibo38Lib.config.Language;
 import me.bibo38.Bibo38Lib.spout.Spout;
 
 import org.bukkit.plugin.PluginDescriptionFile;
@@ -15,6 +17,7 @@ public class Bibo38Lib extends JavaPlugin
 	private Logger log;
 	
 	public boolean vaultOn = false;
+	public Language lang;
 	
 	private Spout mySpout = null;
 	
@@ -34,6 +37,11 @@ public class Bibo38Lib extends JavaPlugin
 		{
 			vaultOn = true;
 		}
+		
+		this.getConfig().options().copyDefaults(true);
+		this.saveConfig();
+		lang = new Language(this.getConfig().getString("lang"), this);
+		new Command(this, "bibo38lib", "bibo38lib", new CmdHandler());
 		
 		// Ordner erstellen
 		if(!(new File(this.getDataFolder(), "cache")).exists())
