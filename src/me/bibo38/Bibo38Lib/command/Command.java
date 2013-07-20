@@ -1,8 +1,9 @@
 package me.bibo38.Bibo38Lib.command;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.TreeMap;
 
 import me.bibo38.Bibo38Lib.Permissions;
 import me.bibo38.Bibo38Lib.Startfunc;
@@ -52,6 +53,9 @@ public class Command extends Startfunc implements CommandExecutor
 			{
 				// Funktion auslesen
 				String name = m.getName().toLowerCase();
+				if(annot.umlaut())
+					name = name.replace("ae", "ä").replace("oe", "ö").replace("ue", "ü");
+				
 				if(m.getParameterTypes().length == 2 &&
 						m.getParameterTypes()[0].equals(CommandSender.class) &&
 						m.getParameterTypes()[1].equals(String[].class))
@@ -109,11 +113,9 @@ public class Command extends Startfunc implements CommandExecutor
 	{
 		// Seitenanzahl berechnen
 		if(page < 1)
-		{
 			page = 1;
-		}
 		
-		HashMap<String, ACommand> allowedCmds = new HashMap<String, ACommand>();
+		TreeMap<String, ACommand> allowedCmds = new TreeMap<String, ACommand>();
 		for(String aktCmd : cmds.keySet().toArray(new String[0]))
 		{
 			ACommand annot = cmds.get(aktCmd).getAnnotation(ACommand.class);
@@ -123,17 +125,15 @@ public class Command extends Startfunc implements CommandExecutor
 		
 		int pages = allowedCmds.keySet().size() / 10 + 1;
 		if(page > pages)
-		{
 			page = pages;
-		}
 		
 		cs.sendMessage(col + main.lang.getText("help", plug.getName()+" "+plug.getDescription().getVersion(), String.valueOf(page), String.valueOf(pages)));
 		cs.sendMessage("");
 		
-		Iterator<String> it = allowedCmds.keySet().iterator();
-		while(it.hasNext())
+		String cmdArray[] = allowedCmds.keySet().toArray(new String[0]);
+		for(int i = 10*(page-1); i < 10*page && i < cmdArray.length; i++)
 		{
-			String name = it.next();
+			String name = cmdArray[i];
 			ACommand aktcmd = allowedCmds.get(name);
 			
 			cs.sendMessage(col + "/" + cmdName + " " + name + " - " + aktcmd.description());
@@ -141,9 +141,7 @@ public class Command extends Startfunc implements CommandExecutor
 		
 		cs.sendMessage("");
 		if(page != pages)
-		{
 			cs.sendMessage(col + main.lang.getText("next", "/" + cmdName + " help " + (page + 1)));
-		}
 		
 		cs.sendMessage(col + "----------------------------------------");
 	}
@@ -188,14 +186,42 @@ public class Command extends Startfunc implements CommandExecutor
 	public boolean onCommand(CommandSender cs,
 			org.bukkit.command.Command cmd, String label, String[] args)
 	{
+		Language l = main.lang;
 		if(args.length == 0 || (args.length == 1 && args[0].equalsIgnoreCase("help"))) // Hilfe anzeigen
 		{
+			if(cmds.containsKey("help"))
+			{
+				try
+				{
+					cmds.get("help").invoke(cmdListener, cs, new String[0]);
+				} catch(Exception e)
+				{
+					cs.sendMessage(ChatColor.RED + l.getText("error"));
+					e.printStackTrace();
+				}
+				return true;
+			}
 			this.sendHelp(cs, 1);
 			return true;
 		}
 		
+		// Neue Args erstellen
+		String[] newargs = Arrays.copyOfRange(args, 1, args.length);
+		
 		if(args[0].equalsIgnoreCase("help"))
 		{
+			if(cmds.containsKey("help"))
+			{
+				try
+				{
+					cmds.get("help").invoke(cmdListener, cs, newargs);
+				} catch(Exception e)
+				{
+					cs.sendMessage(ChatColor.RED + l.getText("error"));
+					e.printStackTrace();
+				}
+				return true;
+			}
 			int seite = 1;
 			String command = "";
 			
@@ -217,8 +243,6 @@ public class Command extends Startfunc implements CommandExecutor
 			
 			return true;
 		}
-		
-		Language l = main.lang;
 		
 		if(!cmds.containsKey(args[0].toLowerCase()))
 		{
@@ -245,13 +269,6 @@ public class Command extends Startfunc implements CommandExecutor
 		// Permissions prüfen
 		if(!checkPerm(cs, annot, true))
 			return true;
-		
-		// Neue Args erstellen
-		String[] newargs = new String[args.length - 1];
-		for(int i = 1; i < args.length; i++)
-		{
-			newargs[i - 1] = args[i];
-		}
 		
 		try
 		{

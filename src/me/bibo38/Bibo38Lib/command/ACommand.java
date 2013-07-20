@@ -15,4 +15,5 @@ public @interface ACommand
 	String description() default "";
 	boolean playerNeed() default false; // Wird ein Spieler benötigt
 	String permissions() default "op";
+	boolean umlaut() default false;
 }

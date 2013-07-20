@@ -20,6 +20,7 @@ nbproject/private/
 
 #ignore generated .class files
 *.class
+bin
 
 #except this file
 !.gitignore

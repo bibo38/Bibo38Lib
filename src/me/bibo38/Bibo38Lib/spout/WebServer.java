@@ -10,7 +10,10 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.HashMap;
+
+import me.bibo38.Bibo38Lib.Startfunc;
 
 public class WebServer extends Thread
 {
@@ -56,7 +59,7 @@ public class WebServer extends Thread
 	 */
 	public String getIp()
 	{
-		return server.getInetAddress().getHostAddress();
+		return Startfunc.getMain().getServer().getIp();
 	}
 	
 	/**
@@ -161,15 +164,16 @@ public class WebServer extends Thread
 					
 					// Datei zurückgeben
 					InputStream orgin = new FileInputStream(new File(mainDir, datei));
-					int tmp;
+					byte[] tmp = new byte[1024];
 					while(true)
 					{
-						if((tmp = orgin.read()) < 0)
+						int cnt;
+						if((cnt = orgin.read(tmp)) < 0)
 						{
 							break;
 						} else
 						{
-							out.write(tmp);
+							out.write(tmp, 0, cnt);
 						}
 					}
 					
@@ -183,6 +187,9 @@ public class WebServer extends Thread
 				sock.shutdownOutput();
 				
 				sock.close();
+			} catch(SocketException e)
+			{
+				// Nichts machen, da es ein Connection Reset sein könnte, einfach nur chillen
 			} catch (IOException e)
 			{
 				// Pech gehabt, Fehler beim Abrufen
