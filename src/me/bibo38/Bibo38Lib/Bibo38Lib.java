@@ -19,6 +19,10 @@ public class Bibo38Lib extends JavaPlugin
 	public boolean vaultOn = false;
 	public Language lang;
 	
+	public String jdbcURL;
+	public String jdbcUser;
+	public String jdbcPass;
+	
 	private Spout mySpout = null;
 	
 	@Override
@@ -41,7 +45,10 @@ public class Bibo38Lib extends JavaPlugin
 		this.getConfig().options().copyDefaults(true);
 		this.saveConfig();
 		lang = new Language(this.getConfig().getString("lang"), this);
-		new Command(this, "bibo38lib", "bibo38lib", new CmdHandler());
+		
+		CmdHandler cmd = new CmdHandler();
+		new Command(this, "bibo38lib", "bibo38lib", cmd);
+		cmd.reload(null, null);
 		
 		// Ordner erstellen
 		if(!(new File(this.getDataFolder(), "cache")).exists())

@@ -1,8 +1,11 @@
 package me.bibo38.Bibo38Lib.command;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.TreeMap;
 
 import me.bibo38.Bibo38Lib.Permissions;
@@ -12,10 +15,12 @@ import me.bibo38.Bibo38Lib.config.Language;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.PluginCommand;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class Command extends Startfunc implements CommandExecutor
+public class Command extends Startfunc implements CommandExecutor, TabCompleter
 {
 	protected JavaPlugin plug;
 	
@@ -65,7 +70,11 @@ public class Command extends Startfunc implements CommandExecutor
 			}
 		}
 		
-		plug.getCommand(cmdName).setExecutor(this);
+		PluginCommand cmd = plug.getCommand(cmdName);
+		if(cmd == null)
+			throw new IllegalArgumentException("Not registered Command "+cmdName);
+		cmd.setExecutor(this);
+		cmd.setTabCompleter(this);
 	}
 	
 	public static void updateColor()
@@ -94,7 +103,7 @@ public class Command extends Startfunc implements CommandExecutor
 			{
 				if(((Player) cs).isOp())
 					return true;
-				else
+				else if(show)
 					cs.sendMessage(ChatColor.RED + main.lang.getText("noperm"));
 			} else if(annot.permissions().equals("none"))
 			{
@@ -269,16 +278,32 @@ public class Command extends Startfunc implements CommandExecutor
 		// Permissions prüfen
 		if(!checkPerm(cs, annot, true))
 			return true;
-		
+			
 		try
 		{
 			cmds.get(args[0].toLowerCase()).invoke(cmdListener, cs, newargs);
-		} catch (Exception e)
+		} catch (InvocationTargetException e)
 		{
 			cs.sendMessage(ChatColor.RED + l.getText("error"));
+			if(e.getCause() != null)
+				e.getCause().printStackTrace();
+		} catch(IllegalAccessException e)
+		{
 			e.printStackTrace();
 		}
 		
 		return true; // Immer true, da es eine automatische Hilfe gibt :)
+	}
+
+	@Override
+	public List<String> onTabComplete(CommandSender cs,
+			org.bukkit.command.Command cmd, String label, String[] args)
+	{
+		ArrayList<String> ret = new ArrayList<String>();
+		if(args.length == 1)
+			for(String akt : cmds.keySet())
+				if(akt.startsWith(args[0]) && checkPerm(cs, cmds.get(akt).getAnnotation(ACommand.class), false))
+					ret.add(akt);
+		return ret;
 	}
 }

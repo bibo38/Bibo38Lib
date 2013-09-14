@@ -1,6 +1,8 @@
 package me.bibo38.Bibo38Lib;
 
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 
 import me.bibo38.Bibo38Lib.command.ACommand;
 import me.bibo38.Bibo38Lib.command.Command;
@@ -12,7 +14,13 @@ public class CmdHandler extends Startfunc implements CommandListener
 	public void reload(CommandSender cs, String args[])
 	{
 		main.reloadConfig();
-		main.lang.setLang(main.getConfig().getString("lang"));
+		FileConfiguration cfg = main.getConfig();
+		main.lang.setLang(cfg.getString("lang"));
 		Command.updateColor();
+		
+		ConfigurationSection jdbc = cfg.getConfigurationSection("database");
+		main.jdbcURL = jdbc.getString("url");
+		main.jdbcUser = jdbc.getString("user");
+		main.jdbcPass = jdbc.getString("pass");
 	}
 }
