@@ -2,6 +2,12 @@ package me.bibo38.Bibo38Lib;
 
 import java.lang.reflect.Field;
 
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+
 public class Utils
 {
 	// Reflection Utils
@@ -70,5 +76,32 @@ public class Utils
 		ret = f.get(o);
 		f.setAccessible(access);
 		return ret;
+	}
+	
+	public static void saveLocation(ConfigurationSection cfs, Location loc)
+	{
+		if(loc == null)
+			return;
+		cfs.set("x", loc.getX());
+		cfs.set("y", loc.getY());
+		cfs.set("z", loc.getZ());
+		cfs.set("world", loc.getWorld().getName());
+	}
+	
+	public static Location getLocation(ConfigurationSection cfg, String name)
+	{
+		cfg = cfg.getConfigurationSection(name);
+		if(cfg == null)
+			return null;
+		return new Location(Bukkit.getWorld(cfg.getString("world")),
+							 cfg.getDouble("x"),
+							 cfg.getDouble("y"),
+							 cfg.getDouble("z"));
+	}
+	
+	public static void clearInventory(Player p)
+	{
+		p.getInventory().clear();
+		p.getInventory().setArmorContents(new ItemStack[] {null, null, null, null});
 	}
 }
