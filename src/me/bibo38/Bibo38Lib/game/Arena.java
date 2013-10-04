@@ -7,13 +7,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import me.bibo38.Bibo38Lib.Utils;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -119,6 +119,7 @@ public class Arena implements Runnable, Listener
 		p.setHealth(20D);
 		p.setExhaustion(0F);
 		p.setSaturation(20F);
+		p.setGameMode(GameMode.SURVIVAL);
 		
 		if(score != null)
 			p.setScoreboard(score);
@@ -163,7 +164,11 @@ public class Arena implements Runnable, Listener
 	public void onPlayerRespawn(PlayerRespawnEvent e)
 	{
 		if(players.containsKey(e.getPlayer()))
-			e.setRespawnLocation(this.getSpawn(e.getPlayer()));
+		{
+			Location spawn = this.getSpawn(e.getPlayer());
+			if(spawn != null)
+				e.setRespawnLocation(spawn);
+		}
 	}
 	
 	@EventHandler
@@ -171,7 +176,4 @@ public class Arena implements Runnable, Listener
 	{
 		players.remove(e.getPlayer());
 	}
-	
-	@EventHandler
-	public void onCommand(PlayerCommandPreprocessEvent e) {}
 }

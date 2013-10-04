@@ -4,9 +4,14 @@ import java.lang.reflect.Field;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.SkullType;
+import org.bukkit.block.Skull;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 
 public class Utils
 {
@@ -103,5 +108,55 @@ public class Utils
 	{
 		p.getInventory().clear();
 		p.getInventory().setArmorContents(new ItemStack[] {null, null, null, null});
+	}
+	
+	public static String getSkullName(Location l)
+	{
+		if(l == null || l.getBlock().getType() != Material.SKULL)
+			return null;
+		Skull s = (Skull) l.getBlock().getState();
+		return s.getOwner();
+	}
+	
+	public static void setSkullName(Location l, String name)
+	{
+		if(l == null || l.getBlock().getType() != Material.SKULL)
+			return;
+		Skull s = (Skull) l.getBlock().getState();
+		s.setSkullType(SkullType.PLAYER);
+		s.setOwner(name);
+	}
+	
+	public static String getSkullName(ItemStack i)
+	{
+		if(i == null || i.getType() != Material.SKULL_ITEM)
+			return null;
+		SkullMeta s = (SkullMeta) i.getItemMeta();
+		return s.getOwner();
+	}
+	
+	public static void setSkullName(ItemStack i, String name)
+	{
+		if(i == null || i.getType() != Material.SKULL_ITEM)
+			return;
+		SkullMeta s = (SkullMeta) i.getItemMeta();
+		s.setOwner(name);
+		i.setItemMeta(s);
+	}
+	
+	public static void setItemName(ItemStack i, String name)
+	{
+		if(i == null)
+			return;
+		ItemMeta im = i.getItemMeta();
+		im.setDisplayName(name);
+		i.setItemMeta(im);
+	}
+	
+	public static String getItemName(ItemStack i)
+	{
+		if(i == null)
+			return null;
+		return i.getItemMeta().getDisplayName();
 	}
 }

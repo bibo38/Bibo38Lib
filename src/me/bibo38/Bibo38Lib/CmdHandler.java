@@ -1,12 +1,12 @@
 package me.bibo38.Bibo38Lib;
 
-import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
-
 import me.bibo38.Bibo38Lib.command.ACommand;
 import me.bibo38.Bibo38Lib.command.Command;
 import me.bibo38.Bibo38Lib.command.CommandListener;
+
+import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 
 public class CmdHandler extends Startfunc implements CommandListener
 {

@@ -4,10 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.getspout.spoutapi.SpoutManager;
-
-
 import me.bibo38.Bibo38Lib.Startfunc;
+
+import org.getspout.spoutapi.SpoutManager;
 
 public class Spout extends Startfunc
 {
