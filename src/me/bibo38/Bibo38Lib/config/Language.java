@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.regex.Pattern;
 
 import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class Language
@@ -109,10 +110,27 @@ public class Language
 		} else
 			ret = langCfg.getCfg().getString(key);
 		
-		for(String akt : args)
-			ret = ret.replaceFirst(Pattern.quote("$$"), akt);
+		for(int i = 0; i < args.length; i++)
+			ret = ret.replaceFirst(Pattern.quote("$$"), args[i]).replace("$"+(i+1)+"$", args[i]);
 		
-		return ret.replace('&', ChatColor.COLOR_CHAR);
+		return ret.replace('&', ChatColor.COLOR_CHAR).replace("\r", "");
+	}
+	
+	public void sendText(CommandSender p, String key, boolean error, String... args)
+	{
+		this.sendText(p, key, error? ChatColor.RED : ChatColor.GREEN, args);
+	}
+	
+	public void sendText(CommandSender p, String key, String... args)
+	{
+		this.sendText(p, key, ChatColor.WHITE, args);
+	}
+	
+	public void sendText(CommandSender p, String key, ChatColor col, String... args)
+	{
+		String text[] = this.getText(key, args).split("\n");
+		for(String t : text)
+			p.sendMessage(col+t);
 	}
 	
 	/**

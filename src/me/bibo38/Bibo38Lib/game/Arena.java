@@ -98,9 +98,9 @@ public class Arena implements Runnable, Listener
 	
 	public void stop()
 	{
+		started = false;
 		for(Player p : players.keySet())
 			this.leave(p);
-		started = false;
 	}
 	
 	public void delete()
@@ -165,15 +165,19 @@ public class Arena implements Runnable, Listener
 	{
 		if(players.containsKey(e.getPlayer()))
 		{
-			Location spawn = this.getSpawn(e.getPlayer());
-			if(spawn != null)
-				e.setRespawnLocation(spawn);
+			if(started)
+			{
+				Location spawn = this.getSpawn(e.getPlayer());
+				if(spawn != null)
+					e.setRespawnLocation(spawn);
+			} else if(lobby != null)
+				e.setRespawnLocation(lobby);
 		}
 	}
 	
 	@EventHandler
 	public void onPlayerLeave(PlayerQuitEvent e)
 	{
-		players.remove(e.getPlayer());
+		leave(e.getPlayer());
 	}
 }

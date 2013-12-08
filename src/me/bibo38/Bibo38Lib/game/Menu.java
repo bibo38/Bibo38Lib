@@ -3,14 +3,14 @@ package me.bibo38.Bibo38Lib.game;
 import java.util.HashSet;
 
 import me.bibo38.Bibo38Lib.Startfunc;
-import net.minecraft.server.v1_6_R3.Container;
-import net.minecraft.server.v1_6_R3.EntityPlayer;
-import net.minecraft.server.v1_6_R3.Packet100OpenWindow;
+import net.minecraft.server.v1_7_R1.Container;
+import net.minecraft.server.v1_7_R1.EntityPlayer;
+import net.minecraft.server.v1_7_R1.PacketPlayOutOpenWindow;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_6_R3.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_6_R3.inventory.CraftContainer;
+import org.bukkit.craftbukkit.v1_7_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_7_R1.inventory.CraftContainer;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -86,8 +86,8 @@ public class Menu extends Startfunc implements Listener
 	    	return; */
 	    
 	    int size = container.getBukkitView().getTopInventory().getSize();
-
-	    p.playerConnection.sendPacket(new Packet100OpenWindow(container.windowId, 9, title, size, true));
+	    
+	    p.playerConnection.sendPacket(new PacketPlayOutOpenWindow(container.windowId, 9, title, size, true));
 	    p.activeContainer = container;
 	    p.activeContainer.addSlotListener(p);
 	}

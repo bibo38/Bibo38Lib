@@ -1,6 +1,6 @@
 name: Bibo38Lib
 main: me.bibo38.Bibo38Lib.Bibo38Lib
-version: 0.93
+version: 0.94
 author: bibo38
 softdepend: [Vault, Spout]
 commands:

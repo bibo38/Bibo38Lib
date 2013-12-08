@@ -2,11 +2,8 @@ package me.bibo38.Bibo38Lib.spout;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 
 import me.bibo38.Bibo38Lib.Startfunc;
-
-import org.getspout.spoutapi.SpoutManager;
 
 public class Spout extends Startfunc
 {
@@ -34,20 +31,5 @@ public class Spout extends Startfunc
 	public WebServer getServer()
 	{
 		return server;
-	}
-	
-	/**
-	 * Eine Datei autmatisch auf den Web-Server erstellen und in Spout einstellen
-	 * 
-	 * @param is Der InputStream der Datei
-	 * @param suffix Der Suffix der Datei
-	 * @return Der URL der Datei
-	 * @throws IOException Bei Fehlschlägen des Hinzufügens
-	 */
-	public String addCache(InputStream is, String suffix) throws IOException
-	{
-		String erg = server.addFile(is, "cache_", suffix);
-		SpoutManager.getFileManager().addToPreLoginCache(main, erg); // Für das vorzeitige Laden
-		return erg;
 	}
 }

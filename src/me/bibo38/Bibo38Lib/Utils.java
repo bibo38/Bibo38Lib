@@ -139,6 +139,7 @@ public class Utils
 	{
 		if(i == null || i.getType() != Material.SKULL_ITEM)
 			return;
+		i.setDurability((short) SkullType.PLAYER.ordinal());
 		SkullMeta s = (SkullMeta) i.getItemMeta();
 		s.setOwner(name);
 		i.setItemMeta(s);
