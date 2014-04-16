@@ -3,14 +3,14 @@ package me.bibo38.Bibo38Lib.game;
 import java.util.HashSet;
 
 import me.bibo38.Bibo38Lib.Startfunc;
-import net.minecraft.server.v1_7_R1.Container;
-import net.minecraft.server.v1_7_R1.EntityPlayer;
-import net.minecraft.server.v1_7_R1.PacketPlayOutOpenWindow;
+import net.minecraft.server.v1_7_R3.Container;
+import net.minecraft.server.v1_7_R3.EntityPlayer;
+import net.minecraft.server.v1_7_R3.PacketPlayOutOpenWindow;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_7_R1.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_7_R1.inventory.CraftContainer;
+import org.bukkit.craftbukkit.v1_7_R3.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_7_R3.inventory.CraftContainer;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

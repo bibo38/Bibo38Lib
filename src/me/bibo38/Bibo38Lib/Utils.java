@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.SkullType;
 import org.bukkit.block.Skull;
 import org.bukkit.configuration.ConfigurationSection;
@@ -110,21 +111,21 @@ public class Utils
 		p.getInventory().setArmorContents(new ItemStack[] {null, null, null, null});
 	}
 	
-	public static String getSkullName(Location l)
+	public static OfflinePlayer getSkullName(Location l)
 	{
 		if(l == null || l.getBlock().getType() != Material.SKULL)
 			return null;
 		Skull s = (Skull) l.getBlock().getState();
-		return s.getOwner();
+		return s.getPlayer();
 	}
 	
-	public static void setSkullName(Location l, String name)
+	public static void setSkullName(Location l, Player p)
 	{
 		if(l == null || l.getBlock().getType() != Material.SKULL)
 			return;
 		Skull s = (Skull) l.getBlock().getState();
 		s.setSkullType(SkullType.PLAYER);
-		s.setOwner(name);
+		s.setPlayer(p);
 	}
 	
 	public static String getSkullName(ItemStack i)
