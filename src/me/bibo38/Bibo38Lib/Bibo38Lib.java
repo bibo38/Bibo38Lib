@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-import me.bibo38.Bibo38Lib.command.Command;
+import me.bibo38.Bibo38Lib.command.CommandHandler;
 import me.bibo38.Bibo38Lib.config.Language;
 import me.bibo38.Bibo38Lib.spout.Spout;
 
@@ -47,8 +47,8 @@ public class Bibo38Lib extends JavaPlugin
 		lang = new Language(this.getConfig().getString("lang"), this);
 		
 		CmdHandler cmd = new CmdHandler();
-		new Command(this, "bibo38lib", "bibo38lib", cmd);
-		cmd.reload(null, null);
+		new CommandHandler(this, "bibo38lib", "bibo38lib", cmd, lang);
+		cmd.reload();
 		
 		// Ordner erstellen
 		if(!(new File(this.getDataFolder(), "cache")).exists())

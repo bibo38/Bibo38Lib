@@ -26,6 +26,7 @@ public class Language
 	private HashSet<String> filelangs; // Die Sprachteile, welche in extra dateien untergebracht sind
 	
 	private CustomConfig langCfg = null;
+	private Language father = null;
 	
 	/**
 	 * Konstruktor zum erstellen einer Sprache
@@ -33,9 +34,9 @@ public class Language
 	 * @param elang Die Sprachdatei als yml im lang Ordner (z.b. "de" -> lang/de.yml)
 	 * @param emain Das JavaPlugin Objekt
 	 */
-	public Language(String elang, JavaPlugin emain, String... filelangs)
+	public Language(String lang, JavaPlugin main, String... filelangs)
 	{
-		main = emain;
+		this.main = main;
 		folder = new File(main.getDataFolder(), "lang");
 		this.filelangs = new HashSet<String>(Arrays.asList(filelangs));
 		
@@ -44,7 +45,15 @@ public class Language
 			folder.mkdirs();
 		}
 		
-		this.setLang(elang);
+		this.setLang(lang);
+	}
+	
+	private Language(Language father, CustomConfig newCfg)
+	{
+		this.father = father;
+		this.main = father.main;
+		filelangs = new HashSet<String>();
+		langCfg = newCfg;
 	}
 	
 	/**
@@ -52,9 +61,15 @@ public class Language
 	 * 
 	 * @param elang Die Sprachdatei als yml im lang Ordner (z.b. "de" -> lang/de.yml)
 	 */
-	public void setLang(String elang)
+	public void setLang(String lang)
 	{
-		lang = elang;
+		if(father != null)
+		{
+			father.setLang(lang);
+			return;
+		}
+		
+		this.lang = lang;
 		langCfg = new CustomConfig(new File(folder, lang + ".yml"), lang + ".yml", main);
 		for(String akt : filelangs)
 		{
@@ -108,12 +123,17 @@ public class Language
 				}
 			}
 		} else
-			ret = langCfg.getCfg().getString(key);
+			ret = langCfg.getString(key);
 		
 		for(int i = 0; i < args.length; i++)
 			ret = ret.replaceFirst(Pattern.quote("$$"), args[i]).replace("$"+(i+1)+"$", args[i]);
 		
 		return ret.replace('&', ChatColor.COLOR_CHAR).replace("\r", "");
+	}
+	
+	public CustomConfig getCfg()
+	{
+		return langCfg;
 	}
 	
 	public void sendText(CommandSender p, String key, boolean error, String... args)
@@ -133,6 +153,16 @@ public class Language
 			p.sendMessage(col+t);
 	}
 	
+	public boolean existKey(String key, boolean acceptDefault)
+	{
+		return langCfg.contains(key, acceptDefault);
+	}
+	
+	public Language getSection(String section)
+	{
+		return new Language(this, langCfg.getSection(section));
+	}
+	
 	/**
 	 * Funktion um die aktuelle Sprache zu ermitteln
 	 * 
@@ -140,6 +170,8 @@ public class Language
 	 */
 	public String getLang()
 	{
+		if(father != null)
+			return father.getLang();
 		return lang;
 	}
 }

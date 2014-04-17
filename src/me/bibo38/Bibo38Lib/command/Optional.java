@@ -5,12 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target(ElementType.METHOD)
+// Für optionale Argumente gedacht
+@Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME) // Es soll auch während der Laufzeit funktionieren
-public @interface Command
-{
-	String usage() default "";
-	String description() default "";
-	String permissions() default "op";
-	boolean umlaut() default false;
-}
+public @interface Optional {}

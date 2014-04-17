@@ -1,6 +1,8 @@
 package me.bibo38.Bibo38Lib;
 
 import java.lang.reflect.Field;
+import java.util.HashSet;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -153,6 +155,34 @@ public class Utils
 		ItemMeta im = i.getItemMeta();
 		im.setDisplayName(name);
 		i.setItemMeta(im);
+	}
+	
+	public static UUID getUUID(String s)
+	{
+		try
+		{
+			return UUID.fromString(s);
+		} catch(Exception e) {}
+		return null;
+	}
+	
+	public static Player getPlayer(String name)
+	{
+		for(Player akt : Bukkit.getOnlinePlayers())
+			if(akt.getName().equals(name))
+				return akt;
+		return Bukkit.getPlayer(getUUID(name));
+	}
+	
+	public static OfflinePlayer[] getOfflinePlayers(String name)
+	{
+		HashSet<OfflinePlayer> ret = new HashSet<OfflinePlayer>();
+		for(OfflinePlayer akt : Bukkit.getOfflinePlayers())
+			if(akt.getName().equals(name))
+				ret.add(akt);
+		if(Bukkit.getOfflinePlayer(UUID.fromString(name)) != null)
+			ret.add(Bukkit.getOfflinePlayer(UUID.fromString(name)));
+		return ret.toArray(new OfflinePlayer[0]);
 	}
 	
 	public static String getItemName(ItemStack i)
