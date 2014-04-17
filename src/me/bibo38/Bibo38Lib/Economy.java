@@ -110,10 +110,10 @@ public class Economy extends Startfunc
 	}
 	
 	/**
-	 * Den Währungsnamen ausgaben
+	 * Den WÃ¤hrungsnamen ausgaben
 	 * 
 	 * @param plural Soll es der Plural sein
-	 * @return Den Währungsnamen
+	 * @return Den WÃ¤hrungsnamen
 	 */
 	public String getCurrency(boolean plural)
 	{
