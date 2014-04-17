@@ -568,6 +568,62 @@ class CommandMethod extends Startfunc
 				w = Bukkit.getWorld(id);
 			return w;
 		}
+		if(c == double.class || c == Double.class)
+		{
+			Double d = null;
+			try
+			{
+				d = Double.valueOf(s);
+			} catch(Exception e) {}
+			return d;
+		}
+		if(c == float.class || c == Float.class)
+		{
+			Float f = null;
+			try
+			{
+				f = Float.valueOf(s);
+			} catch(Exception e) {}
+			return f;
+		}
+		if(c == boolean.class || c == Boolean.class)
+			return !(s.equalsIgnoreCase("false") || s.equals("0") || s.isEmpty());
+		if(c == byte.class || c == Byte.class)
+		{
+			Byte b = null;
+			try
+			{
+				b = Byte.valueOf(s);
+			} catch(Exception e) {}
+			return b;
+		}
+		if(c == short.class || c == Short.class)
+		{
+			Short val = null;
+			try
+			{
+				val = Short.valueOf(s);
+			} catch(Exception e) {}
+			return val;
+		}
+		if(c == int.class || c == Integer.class)
+		{
+			Integer i = null;
+			try
+			{
+				i = Integer.valueOf(s);
+			} catch(Exception e) {}
+			return i;
+		}
+		if(c == long.class || c == Long.class)
+		{
+			Long l = null;
+			try
+			{
+				l = Long.valueOf(s);
+			} catch(Exception e) {}
+			return l;
+		}
 		
 		return null;
 	}
