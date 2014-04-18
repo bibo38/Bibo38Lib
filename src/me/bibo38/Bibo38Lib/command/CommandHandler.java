@@ -434,8 +434,9 @@ class CommandMethod extends Startfunc
 				for(Annotation annot : m.getParameterAnnotations()[i])
 					if(annot.annotationType() == Optional.class)
 						minArgs--;
+				minArgs++;
 			}
-			minArgs++; maxArgs++;
+			maxArgs++;
 		}
 	}
 
@@ -443,20 +444,20 @@ class CommandMethod extends Startfunc
 	{
 		Object args[] = new Object[m.getParameterTypes().length];
 		
-		int i = 0, j = 0;
+		int i = 0;
 		if(commandSenderNeeded)
 			args[i++] = cs;
 		for(String akt : givenArgs)
 		{
 			if(i >= args.length)
 				break;
-			args[i] = convertTo(akt, params[j]);
-			if(j < minArgs && args[i] == null)
+			args[i] = convertTo(akt, params[i]);
+			if(args[i] == null && (commandSenderNeeded? i <= minArgs : i < minArgs))
 			{
 				main.lang.sendText(cs, "unknown", true, params[i].getName() + " " + akt);
 				return false;
 			}
-			i++; j++;
+			i++;
 		}
 		
 		try
