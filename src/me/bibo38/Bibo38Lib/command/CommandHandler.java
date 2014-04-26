@@ -273,7 +273,7 @@ public class CommandHandler extends Startfunc implements CommandExecutor, TabCom
 		Language l = main.lang;
 		cs.sendMessage(col + l.getText("usage") + "/" + useCmdName + m.getName() + " " + translate("usage", m, annot.usage()));
 		cs.sendMessage(col + l.getText("desc") + translate("description", m, annot.description()));
-		cs.sendMessage(col + l.getText("console") + (m.isPlayerNeeded()? lang.getText("no") : lang.getText("yes")));
+		cs.sendMessage(col + l.getText("console") + (m.isPlayerNeeded()? l.getText("noLang") : l.getText("yesLang")));
 		
 		if(annot.permissions().equals("op") || annot.permissions().equals("none"))
 		{
@@ -395,13 +395,21 @@ public class CommandHandler extends Startfunc implements CommandExecutor, TabCom
 		ArrayList<String> ret = new ArrayList<String>();
 		if(!direct && args.length == 1)
 		{
+			if("help".regionMatches(true, 0, args[0], 0, args[0].length()))
+				ret.add("help");
 			for(String akt : cmds.keySet())
 				if(akt.regionMatches(true, 0, args[0], 0, args[0].length()) && checkPerm(cs, cmds.get(akt).getAnnotation(), false))
 					ret.add(akt);
 			return ret;
 		}
 		
-		cmds.get(direct? cmd.getName().toLowerCase() : args[0]).onTabComplete(ret, direct? args : Arrays.copyOfRange(args, 1, args.length));
+		CommandMethod cmdMeth = cmds.get(direct? cmd.getName().toLowerCase() : args[0]);
+		if(cmdMeth != null)
+			cmdMeth.onTabComplete(ret, direct? args : Arrays.copyOfRange(args, 1, args.length));
+		else if(!direct && args[0].equalsIgnoreCase("help"))
+			for(String akt : cmds.keySet())
+				if(akt.regionMatches(true, 0, args[1], 0, args[1].length()) && checkPerm(cs, cmds.get(akt).getAnnotation(), false))
+					ret.add(akt);
 		return ret;
 	}
 }
