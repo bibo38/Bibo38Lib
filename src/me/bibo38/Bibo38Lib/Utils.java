@@ -3,6 +3,7 @@ package me.bibo38.Bibo38Lib;
 import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -113,12 +114,12 @@ public class Utils
 		p.getInventory().setArmorContents(new ItemStack[] {null, null, null, null});
 	}
 	
-	public static OfflinePlayer getSkullName(Location l)
+	public static String getSkullName(Location l)
 	{
 		if(l == null || l.getBlock().getType() != Material.SKULL)
 			return null;
 		Skull s = (Skull) l.getBlock().getState();
-		return s.getPlayer();
+		return s.getOwner();
 	}
 	
 	public static void setSkullName(Location l, Player p)
@@ -127,7 +128,7 @@ public class Utils
 			return;
 		Skull s = (Skull) l.getBlock().getState();
 		s.setSkullType(SkullType.PLAYER);
-		s.setPlayer(p);
+		s.setOwner(p.getName());
 	}
 	
 	public static String getSkullName(ItemStack i)
@@ -190,5 +191,33 @@ public class Utils
 		if(i == null)
 			return null;
 		return i.getItemMeta().getDisplayName();
+	}
+	
+	public static String getPackageVersion()
+	{
+		// getName() -> org.bukkit.craftbukkit.v1_7_R3.CraftServer
+		return Bukkit.getServer().getClass().getName().split(Pattern.quote("."))[3];
+	}
+	
+	public static Class<?> getCBClass(String name)
+	{
+		try
+		{
+			return Class.forName("org.bukkit.craftbukkit." + getPackageVersion() + "." + name);
+		} catch (ClassNotFoundException e)
+		{
+			return null;
+		}
+	}
+	
+	public static Class<?> getMCClass(String name)
+	{
+		try
+		{
+			return Class.forName("net.minecraft.server." + getPackageVersion() + "." + name);
+		} catch (ClassNotFoundException e)
+		{
+			return null;
+		}
 	}
 }

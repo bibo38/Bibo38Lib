@@ -2,10 +2,8 @@ package me.bibo38.Bibo38Lib.chat;
 
 import java.util.ArrayList;
 
-import net.minecraft.server.v1_7_R3.ChatSerializer;
-import net.minecraft.server.v1_7_R3.PacketPlayOutChat;
+import me.bibo38.Bibo38Lib.Utils;
 
-import org.bukkit.craftbukkit.v1_7_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
 public class TellrawBuilder
@@ -22,9 +20,25 @@ public class TellrawBuilder
 	
 	public void sendTo(Player... p)
 	{
-		PacketPlayOutChat c = new PacketPlayOutChat(ChatSerializer.a(this.toString()));
-		for(Player akt : p)
-			((CraftPlayer) akt).getHandle().playerConnection.sendPacket(c);
+		try
+		{
+			// ChatSerializer.a(this.toString())
+			Object chatSerializer = Utils.getMCClass("ChatSerializer").getMethod("a", String.class).invoke(null, this.toString());
+			// new PacketPlayOutChat(chatSerializer);
+			Object packChat = Utils.getMCClass("PacketPlayOutChat").getConstructor(Utils.getMCClass("IChatBaseComponent")).newInstance(chatSerializer);
+			for(Player akt : p)
+			{
+				// ((CraftPlayer) akt).getHandle()
+				Object player = akt.getClass().getMethod("getHandle").invoke(akt);
+				// player.playerConnection
+				Object pConn = player.getClass().getField("playerConnection").get(player);
+				// pConn.sendPacket(packChat);
+				pConn.getClass().getMethod("sendPacket", Utils.getMCClass("Packet")).invoke(pConn, packChat);
+			}
+		} catch(Exception e)
+		{
+			e.printStackTrace();
+		}
 	}
 	
 	public TellrawBuilder setText(String text)

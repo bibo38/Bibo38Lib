@@ -3,14 +3,10 @@ package me.bibo38.Bibo38Lib.game;
 import java.util.HashSet;
 
 import me.bibo38.Bibo38Lib.Startfunc;
-import net.minecraft.server.v1_7_R3.Container;
-import net.minecraft.server.v1_7_R3.EntityPlayer;
-import net.minecraft.server.v1_7_R3.PacketPlayOutOpenWindow;
+import me.bibo38.Bibo38Lib.Utils;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_7_R3.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_7_R3.inventory.CraftContainer;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -76,20 +72,41 @@ public class Menu extends Startfunc implements Listener
 			pl.openInventory(inv);
 			return;
 		}
-		EntityPlayer p = ((CraftPlayer) pl).getHandle();
-		if (p.playerConnection == null)
-			return;
-	    Container container = new CraftContainer(inv, pl, p.nextContainerCounter());
-
-	    /* container = CraftEventFactory.callInventoryOpenEvent(p, container);
-	    if (container == null)
-	    	return; */
-	    
-	    int size = container.getBukkitView().getTopInventory().getSize();
-	    
-	    p.playerConnection.sendPacket(new PacketPlayOutOpenWindow(container.windowId, 9, title, size, true));
-	    p.activeContainer = container;
-	    p.activeContainer.addSlotListener(p);
+		
+		try
+		{
+			// EntityPlayer p = ((CraftPlayer) pl).getHandle();
+			Object p = pl.getClass().getMethod("getHandle").invoke(pl);
+			Class<?> pCl = p.getClass();
+			
+			// p.playerConnection
+			Object pConn = pCl.getField("playerConnection").get(p);
+			if (pConn == null)
+				return;
+			
+			// p.nextContainerCounter()
+			int contianerCnt = (int) pCl.getMethod("nextContainerCounter").invoke(p);
+			// new CraftContainer(inv, pl, containerCnt)
+			Object container = Utils.getCBClass("inventory.CraftContainer").getConstructor(Inventory.class, HumanEntity.class, int.class).newInstance(inv, pl, contianerCnt);
+	
+		    /* container = CraftEventFactory.callInventoryOpenEvent(p, container);
+		    if (container == null)
+		    	return; */
+			
+		    // container.windowId
+		    int windowId = container.getClass().getField("windowId").getInt(container);
+		    // new PacketPlayOutOpenWindow(windowId, 9, title, inv.getSize(), true)
+		    Object packOpenWindow = Utils.getMCClass("PacketPlayOutOpenWindow").getConstructor(int.class, int.class, String.class, int.class, boolean.class).newInstance(windowId, 9, title, inv.getSize(), true);
+		    // pConn.sendPacket();
+		    pConn.getClass().getMethod("sendPacket", Utils.getMCClass("Packet")).invoke(pConn, packOpenWindow);
+		    // p.activeContainer = container;
+		    pCl.getField("activeContainer").set(p, container);
+		    // container.addSlotListener(p);
+		    container.getClass().getMethod("addSlotListener", Utils.getMCClass("ICrafting")).invoke(container, p);
+		} catch(Exception e)
+		{
+			e.printStackTrace();
+		}
 	}
 	
 	public void setTitle(String title)
