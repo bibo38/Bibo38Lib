@@ -12,6 +12,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import me.bibo38.Bibo38Lib.Startfunc;
 
@@ -23,7 +24,8 @@ public class WebServer extends Thread
 	private ServerSocket server;
 	private boolean stopserver = false;
 	
-	private HashMap<String, WebService> services;
+	private HashMap<String, WebService> services = new HashMap<String, WebService>();
+	private static HashSet<WebServer> runningServer = new HashSet<WebServer>();
 	
 	/**
 	 * Der Konstruktor des WebServers
@@ -38,8 +40,8 @@ public class WebServer extends Thread
 		
 		server = new ServerSocket(eport);
 		port = server.getLocalPort();
-		services = new HashMap<String, WebService>();
-		services.clear();
+		Startfunc.getMain().getLogger().info("Started WebServer on Port " + port);
+		runningServer.add(this);
 	}
 	
 	/**
@@ -215,6 +217,28 @@ public class WebServer extends Thread
 		services.put(file, service); // WebService registrieren
 		
 		return true;
+	}
+	
+	public void stopServer()
+	{
+		stopserver = true;
+		try
+		{
+			server.close();
+		} catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		server = null;
+		port = -1;
+		runningServer.remove(this);
+	}
+	
+	public static void stopAll()
+	{
+		for(WebServer s : runningServer)
+			s.stopServer();
+		runningServer.clear();
 	}
 	
 	public static Header acceptCORS(Header header)
