@@ -1,5 +1,6 @@
 package me.bibo38.Bibo38Lib;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.UUID;
@@ -12,6 +13,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.SkullType;
 import org.bukkit.block.Skull;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -97,10 +99,16 @@ public class Utils
 		cfs.set("world", loc.getWorld().getName());
 	}
 	
+	public static void saveLocation(ConfigurationSection cfs, String name, Location loc)
+	{
+		if(cfs != null)
+			saveLocation(cfs.createSection(name), loc);
+	}
+	
 	public static Location getLocation(ConfigurationSection cfg, String name)
 	{
 		cfg = cfg.getConfigurationSection(name);
-		if(cfg == null)
+		if(cfg == null || !cfg.contains("world") || !cfg.contains("x") || !cfg.contains("y") || !cfg.contains("z"))
 			return null;
 		return new Location(Bukkit.getWorld(cfg.getString("world")),
 							 cfg.getDouble("x"),
@@ -122,13 +130,14 @@ public class Utils
 		return s.getOwner();
 	}
 	
-	public static void setSkullName(Location l, Player p)
+	public static void setSkullName(Location l, String name)
 	{
 		if(l == null || l.getBlock().getType() != Material.SKULL)
 			return;
 		Skull s = (Skull) l.getBlock().getState();
 		s.setSkullType(SkullType.PLAYER);
-		s.setOwner(p.getName());
+		s.setOwner(name);
+		s.update(false, false);
 	}
 	
 	public static String getSkullName(ItemStack i)
@@ -219,5 +228,53 @@ public class Utils
 		{
 			return null;
 		}
+	}
+	
+	public static Object getEntityHandle(Entity ent)
+	{
+		try
+		{
+			return ent.getClass().getMethod("getHandle").invoke(ent);
+		} catch(Exception e)
+		{
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	public static Object createPacket(String name, Object... args)
+	{
+		Class<?> packClass = getMCClass("Packet" + name);
+		Constructor<?> constr[] = packClass.getConstructors();
+		
+		try
+		{
+			for(Constructor<?> akt : constr)
+				if(akt.getParameterTypes().length == args.length)
+					return akt.newInstance(args);
+		} catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+			
+		return null;
+	}
+	
+	public static void sendPacket(Object player, Object pack)
+	{
+		try
+		{
+			Object playerConnection = player.getClass().getField("playerConnection").get(player);
+			playerConnection.getClass().getMethod("sendPacket", getMCClass("Packet")).invoke(playerConnection, pack);
+		} catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
+	public static void sendPacket(Object pack, Player... players)
+	{
+		for(Player p : players)
+			sendPacket(getEntityHandle(p), pack);
 	}
 }
