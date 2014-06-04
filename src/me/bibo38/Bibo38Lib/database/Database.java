@@ -88,6 +88,8 @@ public class Database extends Startfunc
 	{
 		if(c == int.class || c == Integer.class)
 			return "int(11)";
+		else if(c == long.class || c == Long.class)
+			return "bigint(20)";
 		else if(c == float.class || c == Float.class)
 			return "float";
 		else if(c == double.class || c == Double.class)

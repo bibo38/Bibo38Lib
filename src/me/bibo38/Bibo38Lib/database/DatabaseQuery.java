@@ -14,8 +14,9 @@ public class DatabaseQuery
 	private DatabaseTable dt;
 	
 	private String sortedBy = "";
-	private WhereQuery where;
+	private WhereQuery where = null;
 	private boolean asc = true;
+	private int limit = -1;
 	
 	protected DatabaseQuery(Connection con, DatabaseTable dt)
 	{
@@ -36,12 +37,22 @@ public class DatabaseQuery
 		return this;
 	}
 	
+	public DatabaseQuery limit(int i)
+	{
+		limit = i;
+		return this;
+	}
+	
 	public Object[] find()
 	{
 		String query = "";
-		query = "SELECT * FROM `"+dt.name+"` WHERE "+where;
+		query = "SELECT * FROM `"+dt.name+"`";
+		if(where != null)
+			query += " WHERE "+where;
 		if(sortedBy != "")
 			query += " ORDER BY `"+sortedBy+"`"+(asc? "ASC" : "DESC");
+		if(limit >= 0)
+			query += " LIMIT "+limit;
 		
 		Statement stm = null;
 		ResultSet res = null;
@@ -66,5 +77,13 @@ public class DatabaseQuery
 			e.printStackTrace();
 		}
 		return (Object[]) Database.close(stm, res, new Object[0]);
+	}
+	
+	public Object findUnique()
+	{
+		Object res[] = this.find();
+		if(res.length > 0)
+			return res[0];
+		return null;
 	}
 }
