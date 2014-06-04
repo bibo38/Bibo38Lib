@@ -192,7 +192,7 @@ public class CommandHandler extends Startfunc implements CommandExecutor, TabCom
 		return this.translate(type, m.getName(), defaultVal);
 	}
 	
-	private boolean checkPerm(CommandSender cs, Command annot, boolean show)
+	private boolean checkPerm(CommandSender cs, Command annot, boolean show, String methodName)
 	{
 		// Permissions prüfen
 		if(cs instanceof Player)
@@ -204,12 +204,13 @@ public class CommandHandler extends Startfunc implements CommandExecutor, TabCom
 				else if(show)
 					cs.sendMessage(ChatColor.RED + main.lang.getText("noperm"));
 			} else if(annot.permissions().equals("none"))
-			{
 				return true;
+			else if(annot.permissions().equals(""))
+			{
+				if(perm.hasPerm(cs, methodName.toLowerCase(), show))
+					return true;
 			} else if(perm.hasPerm(cs, annot.permissions(), show))
-			{
 				return true;
-			}
 			
 			return false;
 		} else
@@ -227,7 +228,7 @@ public class CommandHandler extends Startfunc implements CommandExecutor, TabCom
 		for(String aktCmd : cmds.keySet().toArray(new String[0]))
 		{
 			Command annot = cmds.get(aktCmd).getAnnotation();
-			if(checkPerm(cs, annot, false))
+			if(checkPerm(cs, annot, false, aktCmd))
 				allowedCmds.put(aktCmd, annot);
 		}
 		
@@ -367,7 +368,7 @@ public class CommandHandler extends Startfunc implements CommandExecutor, TabCom
 		
 		CommandMethod m = cmds.get(aktCmdName);
 		
-		if(!(m.getMinArgs() <= newargs.length && m.getMaxArgs() >= newargs.length))
+		if(!(m.getMinArgs() <= newargs.length && (m.getMaxArgs() == -1 || m.getMaxArgs() >= newargs.length)))
 		{
 			cs.sendMessage(ChatColor.RED + l.getText("arglen"));
 			cs.sendMessage(ChatColor.RED + l.getText("getusage", "/" + useCmd + " help" + (direct? "" : " " + args[0].toLowerCase())));
@@ -381,7 +382,7 @@ public class CommandHandler extends Startfunc implements CommandExecutor, TabCom
 		}
 		
 		// Permissions prüfen
-		if(!checkPerm(cs, m.getAnnotation(), true))
+		if(!checkPerm(cs, m.getAnnotation(), true, aktCmdName))
 			return true;
 			
 		m.invoke(cmdListener, cs, newargs);
@@ -398,7 +399,7 @@ public class CommandHandler extends Startfunc implements CommandExecutor, TabCom
 			if("help".regionMatches(true, 0, args[0], 0, args[0].length()))
 				ret.add("help");
 			for(String akt : cmds.keySet())
-				if(akt.regionMatches(true, 0, args[0], 0, args[0].length()) && checkPerm(cs, cmds.get(akt).getAnnotation(), false))
+				if(akt.regionMatches(true, 0, args[0], 0, args[0].length()) && checkPerm(cs, cmds.get(akt).getAnnotation(), false, akt))
 					ret.add(akt);
 			return ret;
 		}
@@ -408,7 +409,7 @@ public class CommandHandler extends Startfunc implements CommandExecutor, TabCom
 			cmdMeth.onTabComplete(ret, direct? args : Arrays.copyOfRange(args, 1, args.length));
 		else if(!direct && args[0].equalsIgnoreCase("help"))
 			for(String akt : cmds.keySet())
-				if(akt.regionMatches(true, 0, args[1], 0, args[1].length()) && checkPerm(cs, cmds.get(akt).getAnnotation(), false))
+				if(akt.regionMatches(true, 0, args[1], 0, args[1].length()) && checkPerm(cs, cmds.get(akt).getAnnotation(), false, akt))
 					ret.add(akt);
 		return ret;
 	}
@@ -446,8 +447,11 @@ class CommandMethod extends Startfunc
 			}
 			maxArgs++;
 		}
+		if(params.length > 0 && params[params.length-1].isArray())
+			maxArgs = -1; // Infinite argument size
 	}
 
+	@SuppressWarnings("unchecked")
 	public boolean invoke(CommandListener cmdListener, CommandSender cs, String givenArgs[])
 	{
 		Object args[] = new Object[m.getParameterTypes().length];
@@ -455,17 +459,35 @@ class CommandMethod extends Startfunc
 		int i = 0;
 		if(commandSenderNeeded)
 			args[i++] = cs;
-		for(String akt : givenArgs)
+		for(int j = 0; j < givenArgs.length; j++, i++)
 		{
 			if(i >= args.length)
 				break;
-			args[i] = convertTo(akt, params[i]);
+			
+			if(i == (args.length-1) && maxArgs == -1)
+			{
+				// Infinite  Arguments, copy the rest
+				Object arr[] = new Object[givenArgs.length - j];
+				for(int k = 0; k < arr.length; k++, j++)
+				{
+					arr[k] = convertTo(givenArgs[j], params[i].getComponentType());
+					if(arr[k] == null)
+					{
+						main.lang.sendText(cs, "unknown", true, params[i].getName() + " " + givenArgs[j]);
+						return false;
+					}
+				}
+				
+				args[i] = Arrays.copyOf(arr, arr.length, (Class<? extends Object[]>) params[i]);
+				break;
+			}
+			
+			args[i] = convertTo(givenArgs[j], params[i]);
 			if(args[i] == null && (commandSenderNeeded? i <= minArgs : i < minArgs))
 			{
-				main.lang.sendText(cs, "unknown", true, params[i].getName() + " " + akt);
+				main.lang.sendText(cs, "unknown", true, params[i].getName() + " " + givenArgs[j]);
 				return false;
 			}
-			i++;
 		}
 		
 		try
@@ -528,10 +550,15 @@ class CommandMethod extends Startfunc
 	public void onTabComplete(List<String> set, String args[])
 	{
 		int count = commandSenderNeeded? args.length : args.length-1;
+		
+		if(maxArgs == -1 && count >= params.length)
+			count = params.length-1;
 		if(count >= params.length || count < 0)
 			return; // Zu viele/wenige Argumente
 		
 		Class<?> c = params[count];
+		if(c.isArray())
+			c = c.getComponentType();
 		String last = args[args.length-1];
 		
 		if(c == Player.class)
@@ -566,6 +593,8 @@ class CommandMethod extends Startfunc
 			return s;
 		UUID id = Utils.getUUID(s);
 		
+		if(c == UUID.class)
+			return id;
 		if(c == Player.class)
 			return Utils.getPlayer(s);
 		if(c == OfflinePlayer.class)

@@ -11,6 +11,6 @@ public @interface Command
 {
 	String usage() default "";
 	String description() default "";
-	String permissions() default "op";
+	String permissions() default "";
 	boolean umlaut() default false;
 }
