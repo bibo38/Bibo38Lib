@@ -1,18 +1,21 @@
 package me.bibo38.Bibo38Lib;
 
+import java.util.TreeMap;
+
 import me.bibo38.Bibo38Lib.command.Command;
 import me.bibo38.Bibo38Lib.command.CommandHandler;
 import me.bibo38.Bibo38Lib.command.CommandListener;
 import me.bibo38.Bibo38Lib.command.Optional;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.BlockIterator;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginManager;
 
 public class CmdHandler extends Startfunc implements CommandListener
 {
@@ -31,36 +34,49 @@ public class CmdHandler extends Startfunc implements CommandListener
 	}
 	
 	@Command(description = "Gets the UUID of a Player", usage = "[Name]", permissions = "uuid")
-	public void uuid(CommandSender cs, @Optional Player other)
+	public void uuid(CommandSender cs, @Optional Player... other)
 	{
-		Player p = null;
+		TreeMap<String, Player> toShow = new TreeMap<String, Player>();
+		
 		if(other != null)
-			p = other;
-		else if(cs instanceof Player)
-			p = (Player) cs;
+		{
+			for(Player p : other)
+				toShow.put(p.getName(), p);
+		} else if(cs instanceof Player)
+			toShow.put(((Player) cs).getName(), (Player) cs);
 		else
 			main.lang.sendText(cs, "beplayer", true);
 		
-		if(p != null)
-			cs.sendMessage(p.getUniqueId().toString());
+		for(Player p : toShow.values())
+			cs.sendMessage(p.getName() + ": " + p.getUniqueId().toString());
 	}
 	
 	@Command(description = "Gives a skull of a player", usage = "[Name]", permissions = "skull")
-	public void skull(Player p, @Optional Player p2)
+	public void skull(Player p, @Optional String p2)
 	{
 		if(p2 == null)
-			p2 = p;
+			p2 = p.getName();
 		
-		BlockIterator it = new BlockIterator(p);
-		Block block;
-		while((block = it.next()).getType() == Material.AIR);
-		if(block != null && block.getType() == Material.SKULL)
-			Utils.setSkullName(block.getLocation(), p2);
-		else
-		{
-			ItemStack skull = new ItemStack(Material.SKULL_ITEM);
-			Utils.setSkullName(skull, p2.getName());
-			p.getInventory().addItem(skull);
-		}
+		ItemStack skull = new ItemStack(Material.SKULL_ITEM);
+		Utils.setSkullName(skull, p2);
+		p.getInventory().addItem(skull);
+	}
+	
+	@Command(description = "Disables a Plugin", usage = "[Name]", permissions = "disable")
+	public void disable(String plugin)
+	{
+		PluginManager pm = Bukkit.getPluginManager();
+		Plugin plug = pm.getPlugin(plugin);
+		if(plug != null && plug.isEnabled())
+			pm.disablePlugin(plug);
+	}
+	
+	@Command(description = "Enables a Plugin", usage = "[Name]", permissions = "enable")
+	public void enable(String plugin)
+	{
+		PluginManager pm = Bukkit.getPluginManager();
+		Plugin plug = pm.getPlugin(plugin);
+		if(plug != null && !plug.isEnabled())
+			pm.enablePlugin(plug);
 	}
 }
