@@ -1,6 +1,6 @@
 package me.bibo38.Bibo38Lib;
 
-import org.bukkit.entity.Player;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
 public class Economy extends Startfunc
@@ -36,18 +36,7 @@ public class Economy extends Startfunc
 	 * @param player Der Spieler
 	 * @return Der aktuelle Geldbetrag des Spielers
 	 */
-	public double getMoney(Player player)
-	{
-		return eco.getBalance(player.getName());
-	}
-	
-	/**
-	 * Gibt den aktuellen Kontostand aus
-	 * 
-	 * @param player Der Name des Spieler
-	 * @return Der aktuelle Geldbetrag des Spielers
-	 */
-	public double getMoney(String player)
+	public double getMoney(OfflinePlayer player)
 	{
 		return eco.getBalance(player);
 	}
@@ -58,22 +47,10 @@ public class Economy extends Startfunc
 	 * @param player Des Spieler, dessen Geld gesetzt werden soll
 	 * @param amount Der Geldbetrag, der gesetzt werden soll
 	 */
-	public void setMoney(Player player, double amount)
+	public void setMoney(OfflinePlayer player, double amount)
 	{
-		this.setMoney(player.getName(), amount);
-	}
-	
-	/**
-	 * Setzt den Kontostand eines Spielers
-	 * 
-	 * @param player Des Spieler, dessen Geld gesetzt werden soll
-	 * @param amount Der Geldbetrag, der gesetzt werden soll
-	 */
-	public void setMoney(String player, double amount)
-	{
-		double aktamount = eco.getBalance(player);
-		
-		this.giveMoney(player, amount - aktamount); // Das Geld abziehen/aufladen
+		double aktAmount = eco.getBalance(player);
+		this.giveMoney(player, amount - aktAmount);
 	}
 	
 	/**
@@ -82,31 +59,15 @@ public class Economy extends Startfunc
 	 * @param player Der Spieler
 	 * @param amount Der Betrag, der aufgeladen(+) oder abgezugen(-) werden soll
 	 */
-	public void giveMoney(Player player, double amount)
-	{
-		this.giveMoney(player.getName(), amount);
-	}
-	
-	/**
-	 * Dem Spieler einen Geldbetrag geben/abziehen
-	 * 
-	 * @param player Der Spieler
-	 * @param amount Der Betrag, der aufgeladen(+) oder abgezugen(-) werden soll
-	 */
-	public void giveMoney(String player, double amount)
+	public void giveMoney(OfflinePlayer player, double amount)
 	{
 		if(amount == 0)
-		{
 			return;
-		}
 		
 		if(amount < 0) // Bei kleineren Beträgen
-		{
 			eco.withdrawPlayer(player, -amount);
-		} else
-		{
+		else
 			eco.depositPlayer(player, amount); // Sonst aufladen
-		}
 	}
 	
 	/**

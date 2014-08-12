@@ -2,7 +2,9 @@ package me.bibo38.Bibo38Lib;
 
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -171,15 +173,18 @@ public class Permissions extends Startfunc
 	 */
 	public void addPerm(UUID player, String permission, World welt)
 	{
-		Player spieler = main.getServer().getPlayer(player);
+		OfflinePlayer spieler = Bukkit.getOfflinePlayer(player);
 		if(main.vaultOn)
 		{
-			perm.playerAdd(welt, spieler.getName(), father + permission);
-		} else
-		{	
-			PermissionAttachment pattach = spieler.addAttachment(main);
+			if(welt != null)
+				perm.playerAdd(welt.getName(), spieler, father + permission);
+			else
+				perm.playerAdd(null, spieler, father + permission);
+		} else if(spieler.isOnline())
+		{
+			PermissionAttachment pattach = spieler.getPlayer().addAttachment(main);
 			pattach.setPermission(father + permission, true);
-			spieler.removeAttachment(pattach);
+			spieler.getPlayer().removeAttachment(pattach);
 		}
 	}
 	
@@ -218,15 +223,18 @@ public class Permissions extends Startfunc
 	 */
 	public void remPerm(UUID player, String permission, World welt) // Permission nur auf false setzen nicht l�schen :)
 	{
-		Player spieler = main.getServer().getPlayer(player);
+		OfflinePlayer spieler = Bukkit.getOfflinePlayer(player);
 		if(main.vaultOn)
 		{
-			perm.playerRemove(welt, spieler.getName(), permission);
-		} else
-		{	
-			PermissionAttachment pattach = spieler.addAttachment(main);
+			if(welt != null)
+				perm.playerRemove(welt.getName(), spieler, permission);
+			else
+				perm.playerRemove(null, spieler, permission);
+		} else if(spieler.isOnline())
+		{
+			PermissionAttachment pattach = spieler.getPlayer().addAttachment(main);
 			pattach.setPermission(permission, false);
-			spieler.removeAttachment(pattach);
+			spieler.getPlayer().removeAttachment(pattach);
 		}
 	}
 	

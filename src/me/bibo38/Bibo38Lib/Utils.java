@@ -1,10 +1,21 @@
 package me.bibo38.Bibo38Lib;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.UUID;
 import java.util.regex.Pattern;
+
+import net.minecraft.util.com.mojang.authlib.Agent;
+import net.minecraft.util.com.mojang.authlib.GameProfile;
+import net.minecraft.util.com.mojang.authlib.GameProfileRepository;
+import net.minecraft.util.com.mojang.authlib.ProfileLookupCallback;
+import net.minecraft.util.com.mojang.authlib.minecraft.MinecraftSessionService;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -58,23 +69,60 @@ public class Utils
 			return c;
 	}
 	
+	public static boolean isPrimitiveType(Class<?> c)
+	{
+		return c.isPrimitive() || c == Boolean.class || c == Character.class || c == Byte.class || c == Short.class || c == Integer.class || c == Long.class || c == Float.class || c == Double.class || c == Void.class;
+	}
+	
 	public static Object convert(Object o, Class<?> c)
 	{
 		Object ret = o;
 		c = getWrapper(c);
-		try
-		{
-			String s = o.toString();
-			ret = c.getMethod("valueOf", String.class).invoke(null, s);
-		} catch(Exception e)
+		
+		if(isPrimitiveType(c))
 		{
 			try
 			{
-				ret = c.cast(o);
-			} catch(Exception e1)
+				String s = o.toString();
+				ret = c.getMethod("valueOf", String.class).invoke(null, s);
+			} catch(Exception e)
 			{
 				e.printStackTrace();
 			}
+		} else if(isPrimitiveType(o.getClass()) && c == String.class)
+			return o.toString();
+		
+		try
+		{
+			ret = c.cast(o); // try casting
+		} catch(Exception e1)
+		{
+			// Try serialisation
+			if(o instanceof String && Serializable.class.isAssignableFrom(c))
+			{
+				try
+				{
+					ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(Base64.decode((String) o)));
+					ret = ois.readObject();
+				} catch(Exception e2)
+				{
+					e2.printStackTrace();
+				}
+			} else if(c == String.class && o instanceof Serializable)
+			{
+				try
+				{
+					ByteArrayOutputStream bos = new ByteArrayOutputStream();
+					ObjectOutputStream oos = new ObjectOutputStream(bos);
+					oos.writeObject(o);
+					oos.flush();
+					return Base64.encode(bos.toByteArray());
+				} catch(Exception e2)
+				{
+					e2.printStackTrace();
+				}
+			} else
+				e1.printStackTrace();
 		}
 		return ret;
 	}
@@ -148,14 +196,67 @@ public class Utils
 		return s.getOwner();
 	}
 	
-	public static void setSkullName(ItemStack i, String name)
+	public static ItemStack getSkullWithName(String name)
 	{
-		if(i == null || i.getType() != Material.SKULL_ITEM)
-			return;
-		i.setDurability((short) SkullType.PLAYER.ordinal());
-		SkullMeta s = (SkullMeta) i.getItemMeta();
+		ItemStack i = null;
+		// Bukkit Stuff, not working properly for the UUID system
+		/* SkullMeta s = (SkullMeta) i.getItemMeta();
 		s.setOwner(name);
-		i.setItemMeta(s);
+		i.setItemMeta(s); */
+		
+		// A little Hack
+		try
+		{
+			Class<?> cbitemstack = getCBClass("inventory.CraftItemStack");
+			i = (ItemStack) cbitemstack.getMethod("asCraftCopy", ItemStack.class).invoke(null, new ItemStack(Material.SKULL_ITEM, 1, (short) SkullType.PLAYER.ordinal()));
+			
+			Class<?> mcServerClass = getMCClass("MinecraftServer");
+			Object mcServer = mcServerClass.getMethod("getServer").invoke(null);
+			GameProfileRepository repo = (GameProfileRepository) mcServerClass.getMethod("getGameProfileRepository").invoke(mcServer);
+			final MinecraftSessionService session = (MinecraftSessionService) mcServerClass.getMethod("av").invoke(mcServer);
+			
+			Field handle = cbitemstack.getDeclaredField("handle");
+			handle.setAccessible(true);
+			final Object itemstack = handle.get(i);
+			handle.setAccessible(false);
+			
+			repo.findProfilesByNames(new String[] { name }, Agent.MINECRAFT, new ProfileLookupCallback() {
+				@Override
+				public void onProfileLookupSucceeded(GameProfile p)
+				{
+					try
+					{
+						session.fillProfileProperties(p, true);
+						Class<?> compound = getMCClass("NBTTagCompound");
+						Object outerCompound = compound.getConstructor().newInstance();
+						Object innerCompound = compound.getConstructor().newInstance();
+						
+						getMCClass("GameProfileSerializer").getMethod("a", compound, GameProfile.class).invoke(null, innerCompound, p);
+						compound.getMethod("set", String.class, getMCClass("NBTBase")).invoke(outerCompound, "SkullOwner", innerCompound);
+						getMCClass("ItemStack").getMethod("setTag", compound).invoke(itemstack, outerCompound);
+						System.out.println(outerCompound);
+					} catch(Exception e)
+					{
+						e.printStackTrace();
+					}
+				}
+				
+				@Override
+				public void onProfileLookupFailed(GameProfile arg0, Exception arg1) {}
+			});
+		} catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		return i;
+	}
+	
+	public static void heal(Player p)
+	{
+		p.setHealthScale(1D);
+		p.setFoodLevel(20);
+		p.setSaturation(4.0F);
+		p.setExhaustion(0);
 	}
 	
 	public static void setItemName(ItemStack i, String name)
@@ -176,6 +277,7 @@ public class Utils
 		return null;
 	}
 	
+	@SuppressWarnings("deprecation")
 	public static Player getPlayer(String name)
 	{
 		for(Player akt : Bukkit.getOnlinePlayers())

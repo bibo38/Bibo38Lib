@@ -2,6 +2,7 @@ package me.bibo38.Bibo38Lib.config;
 
 import java.io.File;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -96,7 +97,7 @@ public class CustomConfig
 		InputStream defCfgStream = main.getResource(cfgDefaultName);
 		if(defCfgStream != null)
 		{
-			YamlConfiguration defCfg = YamlConfiguration.loadConfiguration(defCfgStream);
+			YamlConfiguration defCfg = YamlConfiguration.loadConfiguration(new InputStreamReader(defCfgStream));
 			customCfg.setDefaults(defCfg);
 		}
 	}

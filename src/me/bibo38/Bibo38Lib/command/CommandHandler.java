@@ -547,6 +547,7 @@ class CommandMethod extends Startfunc
 			l.add(a);
 	}
 	
+	@SuppressWarnings("deprecation")
 	public void onTabComplete(List<String> set, String args[])
 	{
 		int count = commandSenderNeeded? args.length : args.length-1;
