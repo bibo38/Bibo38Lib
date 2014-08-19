@@ -139,6 +139,13 @@ public class Menu extends Startfunc implements Listener
 		this.setEmptySlot(fillItem);
 	}
 	
+	public void clearOptions()
+	{
+		for(int i = 0; i < slots; i++)
+			inv.setItem(i, null);
+		setEmptySlot(fillItem);
+	}
+	
 	public void showMenu(Player pl)
 	{
 		if(slots != 5)
