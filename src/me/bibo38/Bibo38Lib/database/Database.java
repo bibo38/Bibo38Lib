@@ -56,7 +56,7 @@ public class Database extends Startfunc
 					dt.id = f;
 				colums.put(f.getName(), f);
 			}
-			dt.colums = colums;	
+			dt.colums = colums;
 			
 			if(dt.id == null)
 				continue;
@@ -275,7 +275,16 @@ public class Database extends Startfunc
 				Utils.setVal(dt.id, o, newId);
 				
 				while(it.hasNext())
-					query += ",'"+Utils.getVal(it.next(), o)+"'";
+				{
+					Object val = Utils.getVal(it.next(), o);
+					String str;
+					Class<?> cl = val.getClass();
+					if(Utils.isPrimitiveType(cl) || val instanceof String)
+						str = val.toString();
+					else
+						str = (String) Utils.convert(val, String.class); // Serialisation
+					query += ",'"+str+"'";
+				}
 				
 				query = "INSERT INTO `"+dt.name+"` VALUES ("+query.substring(1)+")";
 			} else
@@ -291,6 +300,7 @@ public class Database extends Startfunc
 				query = "UPDATE `"+dt.name+"` SET "+query.substring(1)+
 						" WHERE `"+dt.id.getName()+"`='"+id+"'";
 			}
+			System.out.println(query);
 			stm.executeUpdate(query);
 		} catch (Exception e)
 		{
