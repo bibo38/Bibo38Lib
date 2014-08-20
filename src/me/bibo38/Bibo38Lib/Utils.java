@@ -85,6 +85,7 @@ public class Utils
 			{
 				String s = o.toString();
 				ret = c.getMethod("valueOf", String.class).invoke(null, s);
+				return ret;
 			} catch(Exception e)
 			{
 				e.printStackTrace();
