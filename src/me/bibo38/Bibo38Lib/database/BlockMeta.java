@@ -103,4 +103,17 @@ public class BlockMeta
 		else
 			return (HashSet<Serializable>) data.clone();
 	}
+	
+	public HashMap<Block, Serializable> getAllBlockMetadata()
+	{
+		HashMap<Block, Serializable> ret = new HashMap<Block, Serializable>();
+		for(Location loc : entries.keySet())
+		{
+			Serializable data = this.getEntry(loc.getBlock());
+			if(data != null)
+				ret.put(loc.getBlock(), data);
+		}
+		
+		return ret;
+	}
 }
