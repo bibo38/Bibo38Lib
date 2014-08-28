@@ -300,7 +300,7 @@ public class Database extends Startfunc
 				query = "UPDATE `"+dt.name+"` SET "+query.substring(1)+
 						" WHERE `"+dt.id.getName()+"`='"+id+"'";
 			}
-			System.out.println(query);
+			
 			stm.executeUpdate(query);
 		} catch (Exception e)
 		{
