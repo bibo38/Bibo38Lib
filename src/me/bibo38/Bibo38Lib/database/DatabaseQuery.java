@@ -10,6 +10,8 @@ import me.bibo38.Bibo38Lib.Utils;
 
 public class DatabaseQuery
 {
+	private static final String RANK_FIELD_NAME = "RNK_";
+	
 	private Connection con;
 	private DatabaseTable dt;
 	
@@ -45,12 +47,16 @@ public class DatabaseQuery
 	
 	public Object[] find()
 	{
+		// Rank from: http://dba.stackexchange.com/questions/13703/get-the-rank-of-a-user-in-a-score-table/13705#13705
 		String query = "";
-		query = "SELECT * FROM `"+dt.name+"`";
+		query = "SELECT *";
+		if(sortedBy != "")
+			query += ", 1+(SELECT count(*) FROM `"+dt.name+"` a WHERE a.`"+sortedBy+"` "+(asc? "<" : ">")+" b.`"+sortedBy+"`) as "+RANK_FIELD_NAME;
+		query += " FROM `"+dt.name+"` b";
 		if(where != null)
 			query += " WHERE "+where;
 		if(sortedBy != "")
-			query += " ORDER BY `"+sortedBy+"`"+(asc? "ASC" : "DESC");
+			query += " ORDER BY `"+sortedBy+"` "+(asc? "ASC" : "DESC");
 		if(limit >= 0)
 			query += " LIMIT "+limit;
 		
@@ -68,7 +74,12 @@ public class DatabaseQuery
 			{
 				Object o = dt.mainClass.newInstance();
 				for(Field f : colums)
-					Utils.setVal(f, o, res.getString(f.getName()));
+				{
+					if(f.getAnnotation(Rank.class) != null)
+						Utils.setVal(f, o, res.getString(RANK_FIELD_NAME));
+					else
+						Utils.setVal(f, o, res.getString(f.getName()));
+				}
 				list.add(o);
 			}
 			return (Object[]) Database.close(stm, res, list.toArray());
