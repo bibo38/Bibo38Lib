@@ -7,6 +7,7 @@ public class DatabaseTable
 {
 	TreeMap<String, Field> colums;
 	Field id = null;
+	Field rank = null;
 	Class<?> mainClass;
 	String name;
 }

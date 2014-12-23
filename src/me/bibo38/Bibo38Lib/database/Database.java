@@ -52,6 +52,11 @@ public class Database extends Startfunc
 			{
 				if(f.getAnnotation(Transient.class) != null)
 					continue;
+				if(f.getAnnotation(Rank.class) != null)
+				{
+					dt.rank = f;
+					continue;
+				}
 				if(f.getAnnotation(Id.class) != null)
 					dt.id = f;
 				colums.put(f.getName(), f);

@@ -50,12 +50,12 @@ public class DatabaseQuery
 		// Rank from: http://dba.stackexchange.com/questions/13703/get-the-rank-of-a-user-in-a-score-table/13705#13705
 		String query = "";
 		query = "SELECT *";
-		if(sortedBy != "")
+		if(!sortedBy.isEmpty())
 			query += ", 1+(SELECT count(*) FROM `"+dt.name+"` a WHERE a.`"+sortedBy+"` "+(asc? "<" : ">")+" b.`"+sortedBy+"`) as "+RANK_FIELD_NAME;
 		query += " FROM `"+dt.name+"` b";
 		if(where != null)
 			query += " WHERE "+where;
-		if(sortedBy != "")
+		if(!sortedBy.isEmpty())
 			query += " ORDER BY `"+sortedBy+"` "+(asc? "ASC" : "DESC");
 		if(limit >= 0)
 			query += " LIMIT "+limit;
@@ -73,13 +73,10 @@ public class DatabaseQuery
 			while(res.next())
 			{
 				Object o = dt.mainClass.newInstance();
+				if(dt.rank != null && !sortedBy.isEmpty())
+					Utils.setVal(dt.rank, o, res.getString(RANK_FIELD_NAME));
 				for(Field f : colums)
-				{
-					if(f.getAnnotation(Rank.class) != null)
-						Utils.setVal(f, o, res.getString(RANK_FIELD_NAME));
-					else
-						Utils.setVal(f, o, res.getString(f.getName()));
-				}
+					Utils.setVal(f, o, res.getString(f.getName()));
 				list.add(o);
 			}
 			return (Object[]) Database.close(stm, res, list.toArray());

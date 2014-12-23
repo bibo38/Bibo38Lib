@@ -79,6 +79,13 @@ public class Utils
 		Object ret = o;
 		c = getWrapper(c);
 		
+		if(o == null)
+		{
+			if(c == String.class)
+				return "";
+			return null;
+		}
+		
 		if(isPrimitiveType(c))
 		{
 			try
