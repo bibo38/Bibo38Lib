@@ -11,12 +11,6 @@ import java.util.HashSet;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-import net.minecraft.util.com.mojang.authlib.Agent;
-import net.minecraft.util.com.mojang.authlib.GameProfile;
-import net.minecraft.util.com.mojang.authlib.GameProfileRepository;
-import net.minecraft.util.com.mojang.authlib.ProfileLookupCallback;
-import net.minecraft.util.com.mojang.authlib.minecraft.MinecraftSessionService;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -206,56 +200,11 @@ public class Utils
 	
 	public static ItemStack getSkullWithName(String name)
 	{
-		ItemStack i = null;
-		// Bukkit Stuff, not working properly for the UUID system
-		/* SkullMeta s = (SkullMeta) i.getItemMeta();
+		ItemStack i = new ItemStack(Material.SKULL_ITEM);
+		SkullMeta s = (SkullMeta) i.getItemMeta();
 		s.setOwner(name);
-		i.setItemMeta(s); */
 		
-		// A little Hack
-		try
-		{
-			Class<?> cbitemstack = getCBClass("inventory.CraftItemStack");
-			i = (ItemStack) cbitemstack.getMethod("asCraftCopy", ItemStack.class).invoke(null, new ItemStack(Material.SKULL_ITEM, 1, (short) SkullType.PLAYER.ordinal()));
-			
-			Class<?> mcServerClass = getMCClass("MinecraftServer");
-			Object mcServer = mcServerClass.getMethod("getServer").invoke(null);
-			GameProfileRepository repo = (GameProfileRepository) mcServerClass.getMethod("getGameProfileRepository").invoke(mcServer);
-			final MinecraftSessionService session = (MinecraftSessionService) mcServerClass.getMethod("av").invoke(mcServer);
-			
-			Field handle = cbitemstack.getDeclaredField("handle");
-			handle.setAccessible(true);
-			final Object itemstack = handle.get(i);
-			handle.setAccessible(false);
-			
-			repo.findProfilesByNames(new String[] { name }, Agent.MINECRAFT, new ProfileLookupCallback() {
-				@Override
-				public void onProfileLookupSucceeded(GameProfile p)
-				{
-					try
-					{
-						session.fillProfileProperties(p, true);
-						Class<?> compound = getMCClass("NBTTagCompound");
-						Object outerCompound = compound.getConstructor().newInstance();
-						Object innerCompound = compound.getConstructor().newInstance();
-						
-						getMCClass("GameProfileSerializer").getMethod("a", compound, GameProfile.class).invoke(null, innerCompound, p);
-						compound.getMethod("set", String.class, getMCClass("NBTBase")).invoke(outerCompound, "SkullOwner", innerCompound);
-						getMCClass("ItemStack").getMethod("setTag", compound).invoke(itemstack, outerCompound);
-						System.out.println(outerCompound);
-					} catch(Exception e)
-					{
-						e.printStackTrace();
-					}
-				}
-				
-				@Override
-				public void onProfileLookupFailed(GameProfile arg0, Exception arg1) {}
-			});
-		} catch(Exception e)
-		{
-			e.printStackTrace();
-		}
+		i.setItemMeta(s);
 		return i;
 	}
 	
@@ -285,7 +234,6 @@ public class Utils
 		return null;
 	}
 	
-	@SuppressWarnings("deprecation")
 	public static Player getPlayer(String name)
 	{
 		for(Player akt : Bukkit.getOnlinePlayers())
