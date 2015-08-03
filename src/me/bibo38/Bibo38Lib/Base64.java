@@ -50,7 +50,7 @@ public class Base64
 		if(padding != 0)
 		{
 			if(padding == 1)
-				throw new StringParsingException("Single remaining encoded character is not possible");
+				throw new IllegalArgumentException("Single remaining encoded character is not possible");
 			padding = 4 - padding;
 			encoded += (padding == 1)? "=" : "==";
 		}
