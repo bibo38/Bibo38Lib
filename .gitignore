@@ -17,10 +17,12 @@ nbproject/private/
 .classpath
 .project
 .settings
+.gradle
 
 #ignore generated .class files
 *.class
 bin
+build
 
 #except this file
 !.gitignore
