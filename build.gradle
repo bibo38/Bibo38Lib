@@ -3,6 +3,8 @@ apply plugin: 'eclipse'
 
 version = 1.2
 
+defaultTasks 'clean', 'build'
+
 sourceSets {
 	main {
 		java {
@@ -14,8 +16,15 @@ sourceSets {
 	}
 }
 
+repositories {
+	mavenCentral()
+	maven { url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+	maven { url = 'http://nexus.theyeticave.net/content/repositories/pub_releases/' }
+}
+
 dependencies {
-	compile fileTree(dir: 'libs', include: '*.jar')
+	compile group: 'org.bukkit', name: 'bukkit', version: '1.8.8-R0.1-SNAPSHOT'
+	compile group: 'net.milkbowl.vault', name: 'VaultAPI', version: '1.5'
 }
 
 task wrapper(type: Wrapper) {
