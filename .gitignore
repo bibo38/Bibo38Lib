@@ -12,12 +12,14 @@
 *.zip
 *.rar
 
-#IDE files to ignore (Netbeans, Eclipse)
+#IDE files to ignore (Netbeans, Eclipse, IntelliJ IDEA)
 nbproject/private/
 .classpath
 .project
 .settings
 .gradle
+.idea
+*.iml
 
 #ignore generated .class files
 *.class
