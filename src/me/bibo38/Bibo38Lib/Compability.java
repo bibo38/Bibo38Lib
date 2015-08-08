@@ -41,8 +41,8 @@ public class Compability
 			{
 				case 1: // Utf8
 					String text = dis.readUTF();
-					text = text.replaceFirst("net/minecraft/server/[^/]+/", "net/minecraft/server/"+packageVersion+"/").
-								replaceFirst("org/bukkit/craftbukkit/[^/]+/", "org/bukkit/craftbukkit/"+packageVersion+"/");
+					text = text.replaceAll("net/minecraft/server/[^/]+", "net/minecraft/server/"+packageVersion).
+								replaceAll("org/bukkit/craftbukkit/[^/]+", "org/bukkit/craftbukkit/"+packageVersion);
 					dos.writeUTF(text);
 					break;
 					
@@ -74,7 +74,7 @@ public class Compability
 		int len;
 		while((len = is.read(data)) != -1)
 			os.write(data, 0, len);
-		
+
 		byte[] out = os.toByteArray();
 		return (Class<?>) defineClass.invoke(cl, name, out, 0, out.length);
 	}
