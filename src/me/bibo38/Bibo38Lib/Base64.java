@@ -2,8 +2,6 @@ package me.bibo38.Bibo38Lib;
 
 import java.util.Arrays;
 
-import com.avaje.ebeaninternal.server.lib.util.StringParsingException;
-
 public class Base64
 {
 	private final static String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
