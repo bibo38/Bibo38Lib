@@ -148,57 +148,18 @@ public class Menu extends Startfunc implements Listener
 	
 	public void showMenu(Player pl)
 	{
-		if(slots != 5)
-		{
-			pl.openInventory(inv);
-			return;
-		}
-		
-		try
-		{
-			// EntityPlayer p = ((CraftPlayer) pl).getHandle();
-			Object p = pl.getClass().getMethod("getHandle").invoke(pl);
-			Class<?> pCl = p.getClass();
-			
-			// p.playerConnection
-			Object pConn = pCl.getField("playerConnection").get(p);
-			if (pConn == null)
-				return;
-			
-			// p.nextContainerCounter()
-			int contianerCnt = (int) pCl.getMethod("nextContainerCounter").invoke(p);
-			// new CraftContainer(inv, pl, containerCnt)
-			Object container = Utils.getCBClass("inventory.CraftContainer").getConstructor(Inventory.class, HumanEntity.class, int.class).newInstance(inv, pl, contianerCnt);
-	
-		    /* container = CraftEventFactory.callInventoryOpenEvent(p, container);
-		    if (container == null)
-		    	return; */
-			
-		    // container.windowId
-		    int windowId = container.getClass().getField("windowId").getInt(container);
-		    // new PacketPlayOutOpenWindow(windowId, 9, title, inv.getSize(), true)
-		    Object packOpenWindow = Utils.getMCClass("PacketPlayOutOpenWindow").getConstructor(int.class, int.class, String.class, int.class, boolean.class).newInstance(windowId, 9, title, inv.getSize(), true);
-		    // pConn.sendPacket();
-		    pConn.getClass().getMethod("sendPacket", Utils.getMCClass("Packet")).invoke(pConn, packOpenWindow);
-		    // p.activeContainer = container;
-		    pCl.getField("activeContainer").set(p, container);
-		    // container.addSlotListener(p);
-		    container.getClass().getMethod("addSlotListener", Utils.getMCClass("ICrafting")).invoke(container, p);
-		} catch(Exception e)
-		{
-			e.printStackTrace();
-		}
+		pl.openInventory(inv);
 	}
 	
 	public void setTitle(String title)
 	{
 		this.title = title;
-		if(slots != 5) // Kein Hopper
-		{
-			ItemStack[] is = inv.getContents();
+		ItemStack[] is = inv.getContents();
+		if(inv.getType() == InventoryType.CHEST)
 			inv = Bukkit.createInventory(null, inv.getSize(), title);
-			inv.addItem(is);
-		}
+		else
+			inv = Bukkit.createInventory(null, inv.getType(), title);
+		inv.addItem(is);
 	}
 	
 	public String getTitle()
@@ -208,7 +169,7 @@ public class Menu extends Startfunc implements Listener
 	
 	public void setSlots(int slots)
 	{
-		if(slots <= 5)
+		if(slots < 5)
 			slots = 5;
 		else if(slots > 6 && slots % 9 != 0)
 			slots = 9*(slots/9 + 1);
