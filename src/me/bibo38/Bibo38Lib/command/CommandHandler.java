@@ -1,20 +1,9 @@
 package me.bibo38.Bibo38Lib.command;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.TreeMap;
-import java.util.UUID;
-
 import me.bibo38.Bibo38Lib.Permissions;
 import me.bibo38.Bibo38Lib.Startfunc;
 import me.bibo38.Bibo38Lib.Utils;
 import me.bibo38.Bibo38Lib.config.Language;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -25,6 +14,11 @@ import org.bukkit.command.PluginCommand;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.*;
 
 public class CommandHandler extends Startfunc implements CommandExecutor, TabCompleter
 {
@@ -587,6 +581,7 @@ class CommandMethod extends Startfunc
 		}
 	}
 	
+	@SuppressWarnings("deprecation")
 	private static Object convertTo(String s, Class<?> c)
 	{
 		if(c == String.class)
@@ -598,7 +593,11 @@ class CommandMethod extends Startfunc
 		if(c == Player.class)
 			return Utils.getPlayer(s);
 		if(c == OfflinePlayer.class)
-			return Bukkit.getOfflinePlayer(id);
+		{
+			if(id != null)
+				return Bukkit.getOfflinePlayer(id);
+			return Bukkit.getOfflinePlayer(s);
+		}
 		if(c == World.class)
 		{
 			World w = Bukkit.getWorld(s);
