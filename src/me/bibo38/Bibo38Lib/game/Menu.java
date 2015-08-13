@@ -1,11 +1,7 @@
 package me.bibo38.Bibo38Lib.game;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-
 import me.bibo38.Bibo38Lib.Startfunc;
 import me.bibo38.Bibo38Lib.Utils;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
@@ -18,6 +14,9 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.ArrayList;
+import java.util.HashSet;
 
 public class Menu extends Startfunc implements Listener
 {
@@ -80,12 +79,10 @@ public class Menu extends Startfunc implements Listener
 	
 	private void fillWithStrategy(int start, ArrayList<ItemStack> toFill, String strategy)
 	{
-		for(int i = 0; i < strategy.length(); i++)
-			if(strategy.charAt(i) == 'x')
+		String mirrorStrategy = new StringBuilder(strategy).reverse().replace(0, 1, strategy).toString();
+		for(int i = 0; i < mirrorStrategy.length(); i++)
+			if(mirrorStrategy.charAt(i) == 'x')
 				inv.setItem(start + i, toFill.remove(0));
-		for(int i = strategy.length()-2; i >= 0; i--)
-			if(strategy.charAt(i) == 'x')
-				inv.setItem(2*strategy.length()-i-2, toFill.remove(0));
 	}
 	
 	public void order()
@@ -159,7 +156,7 @@ public class Menu extends Startfunc implements Listener
 			inv = Bukkit.createInventory(null, inv.getSize(), title);
 		else
 			inv = Bukkit.createInventory(null, inv.getType(), title);
-		inv.addItem(is);
+		inv.setContents(is);
 	}
 	
 	public String getTitle()
