@@ -31,6 +31,8 @@ public class Menu extends Startfunc implements Listener
 	private int slots;
 	private ItemStack fillItem = null;
 	
+	public boolean closeOnSelect = true;
+	
 	public Menu(MenuListener l, boolean closeable, int slots)
 	{
 		this.l = l;
@@ -207,7 +209,9 @@ public class Menu extends Startfunc implements Listener
 			{
 				if(!closeable)
 					canClose.add(e.getWhoClicked());
-				e.getWhoClicked().closeInventory();
+				
+				if(closeOnSelect)
+					e.getWhoClicked().closeInventory();
 				
 				Player pl;
 				if(e.getWhoClicked() instanceof Player)
