@@ -1,21 +1,6 @@
 package me.bibo38.Bibo38Lib;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.util.HashSet;
-import java.util.UUID;
-import java.util.regex.Pattern;
-
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.SkullType;
+import org.bukkit.*;
 import org.bukkit.block.Skull;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
@@ -23,6 +8,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+
+import java.io.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.util.HashSet;
+import java.util.UUID;
+import java.util.regex.Pattern;
 
 public class Utils
 {
@@ -170,6 +162,21 @@ public class Utils
 	{
 		p.getInventory().clear();
 		p.getInventory().setArmorContents(new ItemStack[] {null, null, null, null});
+	}
+
+	public static void normalizePlayer(Player p, GameMode gm)
+	{
+		clearInventory(p);
+		p.setFlying(false);
+		p.setAllowFlight(false);
+		p.setFoodLevel(20);
+		p.setSaturation(20);
+		p.setExhaustion(0);
+		p.setLevel(0);
+		p.setTotalExperience(0);
+		p.setExp(0);
+		p.setGameMode(gm);
+		p.setFireTicks(0);
 	}
 	
 	public static String getSkullName(Location l)
