@@ -1,6 +1,8 @@
 Bibo38Lib
 =========
 
+![Travis Build Status](https://travis-ci.org/bibo38/Bibo38Lib.svg?branch=master)
+
 Creating Bukkit Plugins is sometimes hard or lonely, because
 of all the same Phrases or for an example Economy!
 
