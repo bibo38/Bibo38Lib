@@ -5,6 +5,8 @@ import org.bukkit.scoreboard.Score;
 
 public class TellrawText
 {
+	private static final int FORMAT_MASK = 31;
+	
 	private ChatColor color = null;
 	private int formatting = 0;
 	private TellrawBuilder parent;
@@ -27,7 +29,7 @@ public class TellrawText
 	
 	public TellrawText setFormatting(int format)
 	{
-		formatting = format & 31;
+		formatting = format & FORMAT_MASK;
 		return this;
 	}
 	
@@ -82,6 +84,6 @@ public class TellrawText
 			ret += "\"obfuscated\":\"true\",";
 		ret += hover.toString() + (hover.toString().isEmpty()? "" : ",");
 		ret += click.toString() + (click.toString().isEmpty()? "" : ",");
-		return ret.substring(0, ret.length() - 1)+"}";
+		return ret.substring(0, ret.length() - 1) + "}";
 	}
 }

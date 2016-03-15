@@ -20,6 +20,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class Language
 {
+	private static final int BUFFER_SIZE = 1024;
+	
 	private String lang;
 	private JavaPlugin main;
 	private File folder;
@@ -73,17 +75,17 @@ public class Language
 		langCfg = new CustomConfig(new File(folder, lang + ".yml"), lang + ".yml", main);
 		for(String akt : filelangs)
 		{
-			File f = new File(folder, lang+"-"+akt+".txt");
+			File f = new File(folder, lang + "-" + akt + ".txt");
 			if(f.exists())
 				continue;
 			try
 			{
 				f.createNewFile();
-				InputStream is = main.getResource(lang+"-"+akt+".txt");
+				InputStream is = main.getResource(lang + "-" + akt + ".txt");
 				if(is != null)
 				{
 					OutputStream os = new FileOutputStream(f);
-					byte[] buffer = new byte[1024];
+					byte buffer[] = new byte[BUFFER_SIZE];
 					int read;
 					while((read = is.read(buffer)) >= 0)
 						os.write(buffer, 0, read);
@@ -110,12 +112,12 @@ public class Language
 		if(filelangs.contains(key))
 		{
 			// ret aus datei holen
-			Path f = Paths.get(folder.getAbsolutePath(), lang+"-"+key+".txt");
+			Path f = Paths.get(folder.getAbsolutePath(), lang + "-" + key + ".txt");
 			if(f.toFile().exists())
 			{
 				try
 				{
-					byte[] encoded = Files.readAllBytes(f);
+					byte encoded[] = Files.readAllBytes(f);
 					ret = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(encoded)).toString();
 				} catch(Exception e)
 				{
@@ -126,7 +128,7 @@ public class Language
 			ret = langCfg.getString(key);
 		
 		for(int i = 0; i < args.length; i++)
-			ret = ret.replaceFirst(Pattern.quote("$$"), args[i]).replace("$"+(i+1)+"$", args[i]);
+			ret = ret.replaceFirst(Pattern.quote("$$"), args[i]).replace("$" + (i + 1) + "$", args[i]);
 		
 		return ret.replace('&', ChatColor.COLOR_CHAR).replace("\r", "");
 	}
@@ -150,7 +152,7 @@ public class Language
 	{
 		String text[] = this.getText(key, args).split("\n");
 		for(String t : text)
-			p.sendMessage(col+t);
+			p.sendMessage(col + t);
 	}
 	
 	public boolean existKey(String key, boolean acceptDefault)

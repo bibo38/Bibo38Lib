@@ -13,5 +13,5 @@ public interface WebService
 	 * @param out Der Output Stream für die Rückgabe
 	 * @param addr Die Internet Adresse vom Absender
 	 */
-	public void recive(String file, Header header, OutputStream out, InetAddress addr);
+	void recive(String file, Header header, OutputStream out, InetAddress addr);
 }

@@ -1,0 +1,3 @@
+[submodule "config/checkstyle"]
+	path = config/checkstyle
+	url = https://github.com/bibo38/Checkstyle.git

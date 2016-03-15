@@ -16,12 +16,17 @@ import java.util.HashSet;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-public class Utils
+public final class Utils
 {
+	public static final int MAX_FOOD_LEVEL = 20;
+	public static final float MAX_SATURATION_LEVEL = MAX_FOOD_LEVEL;
+	
+	private Utils() {}
+	
 	// Reflection Utils
-	public static void setVal(Field f, Object o, Object val) throws IllegalArgumentException, IllegalAccessException
+	public static void setVal(Field f, Object o, Object val) throws ReflectiveOperationException
 	{
-		boolean access = f.isAccessible();
+		final boolean access = f.isAccessible();
 		f.setAccessible(true);
 		if(val.getClass() != f.getType())
 			val = convert(val, f.getType());
@@ -89,7 +94,7 @@ public class Utils
 		try
 		{
 			ret = c.cast(o); // try casting
-		} catch(Exception e1)
+		} catch(Exception e)
 		{
 			// Try serialisation
 			if(o instanceof String && Serializable.class.isAssignableFrom(c))
@@ -98,9 +103,9 @@ public class Utils
 				{
 					ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(Base64.decode((String) o)));
 					ret = ois.readObject();
-				} catch(Exception e2)
+				} catch(Exception ex)
 				{
-					e2.printStackTrace();
+					ex.printStackTrace();
 				}
 			} else if(c == String.class && o instanceof Serializable)
 			{
@@ -111,17 +116,17 @@ public class Utils
 					oos.writeObject(o);
 					oos.flush();
 					return Base64.encode(bos.toByteArray());
-				} catch(Exception e2)
+				} catch(Exception ex)
 				{
-					e2.printStackTrace();
+					ex.printStackTrace();
 				}
 			} else
-				e1.printStackTrace();
+				e.printStackTrace();
 		}
 		return ret;
 	}
 	
-	public static Object getVal(Field f, Object o) throws IllegalArgumentException, IllegalAccessException
+	public static Object getVal(Field f, Object o) throws ReflectiveOperationException
 	{
 		Object ret;
 		boolean access = f.isAccessible();
@@ -169,9 +174,7 @@ public class Utils
 		clearInventory(p);
 		p.setFlying(false);
 		p.setAllowFlight(false);
-		p.setFoodLevel(20);
-		p.setSaturation(20);
-		p.setExhaustion(0);
+		heal(p);
 		p.setLevel(0);
 		p.setTotalExperience(0);
 		p.setExp(0);
@@ -218,8 +221,8 @@ public class Utils
 	public static void heal(Player p)
 	{
 		p.setHealthScale(1D);
-		p.setFoodLevel(20);
-		p.setSaturation(4.0F);
+		p.setFoodLevel(MAX_FOOD_LEVEL);
+		p.setSaturation(MAX_SATURATION_LEVEL);
 		p.setExhaustion(0);
 	}
 	
@@ -232,12 +235,14 @@ public class Utils
 		i.setItemMeta(im);
 	}
 	
-	public static UUID getUUID(String s)
+	public static UUID getID(String s)
 	{
 		try
 		{
 			return UUID.fromString(s);
-		} catch(Exception e) {}
+		} catch(Exception e)
+		{
+		}
 		return null;
 	}
 	
@@ -246,7 +251,7 @@ public class Utils
 		for(Player akt : Bukkit.getOnlinePlayers())
 			if(akt.getName().equals(name))
 				return akt;
-		return Bukkit.getPlayer(getUUID(name));
+		return Bukkit.getPlayer(getID(name));
 	}
 	
 	public static OfflinePlayer[] getOfflinePlayers(String name)

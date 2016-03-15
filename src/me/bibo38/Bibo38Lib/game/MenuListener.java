@@ -5,5 +5,5 @@ import org.bukkit.inventory.ItemStack;
 
 public interface MenuListener
 {
-	public void onItemClick(int id, int clickedSlot, ItemStack clickedItem, Player p);
+	void onItemClick(int id, int clickedSlot, ItemStack clickedItem, Player p);
 }

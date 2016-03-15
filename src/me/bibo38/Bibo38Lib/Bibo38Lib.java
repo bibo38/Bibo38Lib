@@ -13,15 +13,15 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class Bibo38Lib extends JavaPlugin
 {
-	private PluginDescriptionFile pdFile;
-	private Logger log;
-	
 	public boolean vaultOn = false;
 	public Language lang;
 	
 	public String jdbcURL;
 	public String jdbcUser;
 	public String jdbcPass;
+	
+	private PluginDescriptionFile pdFile;
+	private Logger log;
 	
 	private WebServer webServ = null;
 	

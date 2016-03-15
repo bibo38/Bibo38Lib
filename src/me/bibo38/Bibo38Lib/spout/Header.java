@@ -10,7 +10,7 @@ public class Header
 	private boolean request; // Ist es eine Anfrage(GET ... HTTP/...) oder Antwort(HTTP/... 200 Ok)
 	
 	private int status; // Für Antwort
-	private byte[] content = null;
+	private byte content[] = null;
 	
 	private double version;
 	private String file, method;
@@ -27,7 +27,7 @@ public class Header
 		header = new HashMap<String, String>();
 		header.clear();
 		
-		if(eheader.substring(0, 4).equals("HTTP"))
+		if("HTTP".equals(eheader.substring(0, 4)))
 		{
 			request = false;
 		} else
@@ -55,7 +55,7 @@ public class Header
 					version = Double.parseDouble(part.substring(6, 9));
 					status = Integer.parseInt(part.substring(part.indexOf(" ") + 1, part.indexOf(" ") + 4));
 				}
-			} else if(!part.equals(""))
+			} else if(!part.isEmpty())
 			{
 				String key = part.substring(0, part.indexOf(":"));
 				String value = part.substring(part.indexOf(":") + 2);
@@ -89,7 +89,7 @@ public class Header
 	 * @param eversion Die HTTP Version
 	 * @param econtent Der HTTP Response Content
 	 */
-	public Header(int estatus, double eversion, byte[] econtent)
+	public Header(int estatus, double eversion, byte econtent[])
 	{
 		this(estatus, eversion);
 		content = econtent;

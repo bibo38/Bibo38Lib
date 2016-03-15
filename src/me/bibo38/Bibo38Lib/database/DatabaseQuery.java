@@ -35,7 +35,7 @@ public class DatabaseQuery
 	public DatabaseQuery sortedBy(String arg, Ordering o)
 	{
 		sortedBy = arg;
-		asc = (o == Ordering.ASCEND);
+		asc = o == Ordering.ASCEND;
 		return this;
 	}
 	
@@ -51,14 +51,14 @@ public class DatabaseQuery
 		String query = "";
 		query = "SELECT *";
 		if(!sortedBy.isEmpty())
-			query += ", 1+(SELECT count(*) FROM `"+dt.name+"` a WHERE a.`"+sortedBy+"` "+(asc? "<" : ">")+" b.`"+sortedBy+"`) as "+RANK_FIELD_NAME;
-		query += " FROM `"+dt.name+"` b";
+			query += ", 1+(SELECT count(*) FROM `" + dt.name + "` a WHERE a.`" + sortedBy + "` " + (asc? "<" : ">") + " b.`" + sortedBy + "`) as " + RANK_FIELD_NAME;
+		query += " FROM `" + dt.name + "` b";
 		if(where != null)
-			query += " WHERE "+where;
+			query += " WHERE " + where;
 		if(!sortedBy.isEmpty())
-			query += " ORDER BY `"+sortedBy+"` "+(asc? "ASC" : "DESC");
+			query += " ORDER BY `" + sortedBy + "` " + (asc? "ASC" : "DESC");
 		if(limit >= 0)
-			query += " LIMIT "+limit;
+			query += " LIMIT " + limit;
 		
 		Statement stm = null;
 		ResultSet res = null;
@@ -68,7 +68,7 @@ public class DatabaseQuery
 			stm = con.createStatement();
 			res = stm.executeQuery(query);
 			ArrayList<Object> list = new ArrayList<Object>();
-			Field[] colums = dt.colums.values().toArray(new Field[0]);
+			Field colums[] = dt.colums.values().toArray(new Field[0]);
 			
 			while(res.next())
 			{

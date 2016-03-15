@@ -3,18 +3,18 @@ package me.bibo38.Bibo38Lib;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-public class Compability
+public final class Compability
 {
-	private static final int magic = 0xCAFEBABE;
+	private static final int MAGIC = 0xCAFEBABE;
+	private static final int BUFFER_SIZE = 1024;
 	
-	public static Class<?> loadCompatible(InputStream is, String name) throws NoSuchMethodException, SecurityException, IOException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
+	private Compability() {}
+	
+	public static Class<?> loadCompatible(InputStream is, String name) throws Exception
 	{
-		ClassLoader cl = Compability.class.getClassLoader();
 		Method defineClass = ClassLoader.class.getDeclaredMethod("defineClass", String.class, byte[].class, int.class, int.class);
 		defineClass.setAccessible(true);
 		
@@ -24,9 +24,9 @@ public class Compability
 		
 		String packageVersion = Utils.getPackageVersion();
 		
-		if(dis.readInt() != magic) // Magic Bytes
+		if(dis.readInt() != MAGIC) // Magic Bytes
 			throw new ClassFormatError("Wrong magic Bytes");
-		dos.writeInt(magic);
+		dos.writeInt(MAGIC);
 		
 		dos.writeInt(dis.readInt()); // Major/Minor Version
 		
@@ -37,31 +37,34 @@ public class Compability
 			byte tag = dis.readByte();
 			dos.writeByte(tag);
 			int copySize = -1;
-			switch(tag)
+			
+			if(tag < 0 || tag >= TagType.values().length)
+				tag = (byte) TagType.INVALID.ordinal();
+			switch(TagType.values()[tag])
 			{
-				case 1: // Utf8
+				case UTF8:
 					String text = dis.readUTF();
-					text = text.replaceAll("net/minecraft/server/[^/]+", "net/minecraft/server/"+packageVersion).
-								replaceAll("org/bukkit/craftbukkit/[^/]+", "org/bukkit/craftbukkit/"+packageVersion);
+					text = text.replaceAll("net/minecraft/server/[^/]+", "net/minecraft/server/" + packageVersion).
+								replaceAll("org/bukkit/craftbukkit/[^/]+", "org/bukkit/craftbukkit/" + packageVersion);
 					dos.writeUTF(text);
 					break;
 					
-				case 5: // Long
-				case 6: copySize = 8; // Double
+				case LONG:
+				case DOUBLE: copySize = 8;
 					break;
-				case 7: // Class
-				case 8: // String
-				case 16: copySize = 2; // MethodType
+				case CLASS:
+				case STRING:
+				case METHOD_TYPE: copySize = 2;
 					break;
-				case 3: // Integer
-				case 4: // Float
-				case 9: // Fieldref
-				case 10: // Methodref
-				case 11: // InterfaceMethodref
-				case 12: // NameAndType
-				case 18: copySize = 4; // InvokeDynamic
+				case INTEGER:
+				case FLOAT:
+				case FIELDREF:
+				case METHODREF:
+				case INTERFACE_METHODREF:
+				case NAME_AND_TYPE:
+				case INVOKE_DYNAMIC: copySize = 4;
 					break;
-				case 15: copySize = 3; // MethodHandle
+				case METHOD_HANDLE: copySize = 3;
 					break;
 				default:
 					// throw new ClassFormatError("Unknown Tag "+tag);
@@ -70,12 +73,20 @@ public class Compability
 				os.write(is.read());
 		}
 		
-		byte data[] = new byte[1024];
+		byte data[] = new byte[BUFFER_SIZE];
 		int len;
 		while((len = is.read(data)) != -1)
 			os.write(data, 0, len);
 
-		byte[] out = os.toByteArray();
-		return (Class<?>) defineClass.invoke(cl, name, out, 0, out.length);
+		byte out[] = os.toByteArray();
+		return (Class<?>) defineClass.invoke(Compability.class.getClassLoader(), name, out, 0, out.length);
 	}
+}
+
+enum TagType
+{
+	INVALID, UTF8, UNK2, INTEGER, FLOAT,
+	LONG, DOUBLE, CLASS, STRING, FIELDREF,
+	METHODREF, INTERFACE_METHODREF, NAME_AND_TYPE, UNK13, UNK14,
+	METHOD_HANDLE, METHOD_TYPE, UNK17, INVOKE_DYNAMIC;
 }

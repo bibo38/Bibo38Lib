@@ -18,6 +18,9 @@ import me.bibo38.Bibo38Lib.Startfunc;
 
 public class WebServer extends Thread
 {
+	private static final int BUFFER_SIZE = 1024;
+	private static HashSet<WebServer> runningServer = new HashSet<WebServer>();
+
 	private File mainDir;
 	private int port;
 	
@@ -25,7 +28,6 @@ public class WebServer extends Thread
 	private boolean stopserver = false;
 	
 	private HashMap<String, WebService> services = new HashMap<String, WebService>();
-	private static HashSet<WebServer> runningServer = new HashSet<WebServer>();
 	
 	/**
 	 * Der Konstruktor des WebServers
@@ -135,7 +137,7 @@ public class WebServer extends Thread
 				{
 					String tmp = in.readLine();
 					
-					if(tmp == null || tmp.equals("")) // Doppeltes \n?
+					if(tmp == null || tmp.isEmpty()) // Doppeltes \n?
 					{
 						break;
 					} else
@@ -166,7 +168,7 @@ public class WebServer extends Thread
 					
 					// Datei zurückgeben
 					InputStream orgin = new FileInputStream(new File(mainDir, datei));
-					byte[] tmp = new byte[1024];
+					byte tmp[] = new byte[BUFFER_SIZE];
 					while(true)
 					{
 						int cnt;
@@ -241,7 +243,7 @@ public class WebServer extends Thread
 		runningServer.clear();
 	}
 	
-	public static Header acceptCORS(Header header)
+	public static Header acceptCors(Header header)
 	{
 		// CORS behandeln und akzeptieren, sodass Content gesendet werden darf
 		// https://developer.mozilla.org/en-US/docs/HTTP_access_control

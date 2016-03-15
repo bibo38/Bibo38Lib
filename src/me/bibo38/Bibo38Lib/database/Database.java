@@ -27,7 +27,7 @@ public class Database extends Startfunc
 	
 	public Database(String url, String user, String pass, Class<?>... classes) throws Exception
 	{
-		con = DriverManager.getConnection(url+"?autoReconnect=true", user, pass);
+		con = DriverManager.getConnection(url + "?autoReconnect=true", user, pass);
 		
 		for(Class<?> c : classes)
 		{
@@ -73,12 +73,12 @@ public class Database extends Startfunc
 			String stm = "";
 			for(String name : colums.keySet())
 			{
-				stm += ",`"+name+"` "+getSQLType(colums.get(name).getType());
+				stm += ",`" + name + "` " + getSQLType(colums.get(name).getType());
 				if(colums.get(name).getAnnotation(NotNull.class) != null)
 					stm += " NOT NULL";
 			}
 			
-			stm = "CREATE TABLE `"+t.name()+"` ("+stm.substring(1)+") DEFAULT CHARSET=utf8";
+			stm = "CREATE TABLE `" + t.name() + "` (" + stm.substring(1) + ") DEFAULT CHARSET=utf8";
 			
 			exec(stm);
 		}
@@ -113,7 +113,7 @@ public class Database extends Startfunc
 	{
 		DatabaseTable dt = tables.get(c);
 		if(dt == null)
-			throw new IllegalArgumentException("Not registered class "+c.getName());
+			throw new IllegalArgumentException("Not registered class " + c.getName());
 		
 		return new DatabaseQuery(con, dt);
 	}
@@ -122,7 +122,7 @@ public class Database extends Startfunc
 	{
 		DatabaseTable dt = tables.get(o.getClass());
 		if(dt == null)
-			throw new IllegalArgumentException("Not registered class "+o.getClass().getName());
+			throw new IllegalArgumentException("Not registered class " + o.getClass().getName());
 		
 		Statement stm = null;
 		ResultSet res = null;
@@ -131,7 +131,7 @@ public class Database extends Startfunc
 		{
 			int id = (Integer) Utils.getVal(dt.id, o);
 			stm = con.createStatement();
-			res = stm.executeQuery("SELECT * FROM `"+dt.name+"` WHERE `"+dt.id.getName()+"`='"+id+"'");
+			res = stm.executeQuery("SELECT * FROM `" + dt.name + "` WHERE `" + dt.id.getName() + "`='" + id + "'");
 			if(!res.next())
 				return;
 			
@@ -152,9 +152,23 @@ public class Database extends Startfunc
 	protected static Object close(Statement stm, ResultSet res, Object ret)
 	{
 		if(stm != null)
-			try {stm.close();} catch (Exception e) {}
+		{
+			try
+			{
+				stm.close();
+			} catch (Exception e)
+			{
+			}
+		}
 		if(res != null)
-			try {res.close();} catch(Exception e) {}
+		{
+			try
+			{
+				res.close();
+			} catch(Exception e)
+			{
+			}
+		}
 		return ret;
 	}
 	
@@ -162,7 +176,7 @@ public class Database extends Startfunc
 	{
 		DatabaseTable dt = tables.get(c);
 		if(dt == null)
-			throw new IllegalArgumentException("Not registered class "+c.getName());
+			throw new IllegalArgumentException("Not registered class " + c.getName());
 		
 		Statement stm = null;
 		ResultSet res = null;
@@ -170,7 +184,7 @@ public class Database extends Startfunc
 		try
 		{
 			stm = con.createStatement();
-			res = stm.executeQuery("SELECT * FROM `"+dt.name+"` WHERE `"+dt.id.getName()+"`='"+id+"'");
+			res = stm.executeQuery("SELECT * FROM `" + dt.name + "` WHERE `" + dt.id.getName() + "`='" + id + "'");
 			if(!res.next())
 				return close(stm, res, null);
 			
@@ -194,7 +208,7 @@ public class Database extends Startfunc
 	{
 		DatabaseTable dt = tables.get(c);
 		if(dt == null)
-			throw new IllegalArgumentException("Not registered class "+c.getName());
+			throw new IllegalArgumentException("Not registered class " + c.getName());
 		
 		Statement stm = null;
 		ResultSet res = null;
@@ -202,10 +216,10 @@ public class Database extends Startfunc
 		try
 		{
 			stm = con.createStatement();
-			res = stm.executeQuery("SELECT * FROM `"+dt.name+"`");
+			res = stm.executeQuery("SELECT * FROM `" + dt.name + "`");
 			
 			HashSet<Object> ret = new HashSet<Object>();
-			Field[] colums = dt.colums.values().toArray(new Field[0]);
+			Field colums[] = dt.colums.values().toArray(new Field[0]);
 			
 			while(res.next())
 			{
@@ -240,11 +254,11 @@ public class Database extends Startfunc
 	{
 		DatabaseTable dt = tables.get(o.getClass());
 		if(dt == null)
-			throw new IllegalArgumentException("Not registered class "+o.getClass().getName());
+			throw new IllegalArgumentException("Not registered class " + o.getClass().getName());
 		  
 		try
 		{
-			String query = "DELETE FROM `"+dt.name+"` WHERE `"+dt.id.getName()+"`='"+Utils.getVal(dt.id, o)+"'";
+			String query = "DELETE FROM `" + dt.name + "` WHERE `" + dt.id.getName() + "`='" + Utils.getVal(dt.id, o) + "'";
 			exec(query);
 		} catch(Exception e)
 		{
@@ -256,7 +270,7 @@ public class Database extends Startfunc
 	{
 		DatabaseTable dt = tables.get(o.getClass());
 		if(dt == null)
-			throw new IllegalArgumentException("Not registered class "+o.getClass().getName());
+			throw new IllegalArgumentException("Not registered class " + o.getClass().getName());
 	    
 		Statement stm = null;
 		ResultSet res = null;
@@ -271,18 +285,18 @@ public class Database extends Startfunc
 			if(id == 0)
 			{
 				// INSERT
-				res = stm.executeQuery("SELECT MAX(`"+dt.id.getName()+"`) FROM `"+dt.name+"`");
+				res = stm.executeQuery("SELECT MAX(`" + dt.id.getName() + "`) FROM `" + dt.name + "`");
 				int newId;
 				if(res.next())
-					newId = res.getInt(1)+1;
+					newId = res.getInt(1) + 1;
 				else
 					newId = 1;
 				Utils.setVal(dt.id, o, newId);
 				
 				while(it.hasNext())
-					query += ",'"+((String) Utils.convert(Utils.getVal(it.next(), o), String.class))+"'";
+					query += ",'" + ((String) Utils.convert(Utils.getVal(it.next(), o), String.class)) + "'";
 				
-				query = "INSERT INTO `"+dt.name+"` VALUES ("+query.substring(1)+")";
+				query = "INSERT INTO `" + dt.name + "` VALUES (" + query.substring(1) + ")";
 			} else
 			{
 				// UPDATE
@@ -291,10 +305,10 @@ public class Database extends Startfunc
 					Field akt = it.next();
 					if(akt == dt.id)
 						continue;
-					query += ",`"+akt.getName()+"`='"+((String) Utils.convert(Utils.getVal(akt, o), String.class))+"'";
+					query += ",`" + akt.getName() + "`='" + ((String) Utils.convert(Utils.getVal(akt, o), String.class)) + "'";
 				}
-				query = "UPDATE `"+dt.name+"` SET "+query.substring(1)+
-						" WHERE `"+dt.id.getName()+"`='"+id+"'";
+				query = "UPDATE `" + dt.name + "` SET " + query.substring(1) +
+						" WHERE `" + dt.id.getName() + "`='" + id + "'";
 			}
 			
 			stm.executeUpdate(query);

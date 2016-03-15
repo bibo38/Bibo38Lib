@@ -8,4 +8,6 @@ import java.lang.annotation.Target;
 // Für optionale Argumente gedacht
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME) // Es soll auch während der Laufzeit funktionieren
-public @interface Optional {}
+public @interface Optional
+{
+}

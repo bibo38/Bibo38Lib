@@ -23,17 +23,6 @@ public class CustomConfig
 	private Logger log;
 	private CustomConfig father = null;
 	
-	private void construct(File file, JavaPlugin main)
-	{
-		customCfgFile = file;
-		this.main = main;
-		log = main.getLogger();
-		
-		this.reload();
-		customCfg.options().copyDefaults(true);
-		this.save();
-	}
-	
 	/**
 	 * Konstruktor zum Erstellen einer eigenen Konfiguration
 	 * 
@@ -66,6 +55,17 @@ public class CustomConfig
 		confSec = sec;
 		main = old.main;
 		log = old.log;
+	}
+	
+	private void construct(File file, JavaPlugin main)
+	{
+		customCfgFile = file;
+		this.main = main;
+		log = main.getLogger();
+		
+		this.reload();
+		customCfg.options().copyDefaults(true);
+		this.save();
 	}
 	
 	/**

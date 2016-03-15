@@ -21,6 +21,8 @@ import org.bukkit.scoreboard.Scoreboard;
 
 public class Arena implements Runnable, Listener
 {
+	private static final int ONE_SECOND = 20;
+	
 	protected ConcurrentHashMap<Player, Integer> players = new ConcurrentHashMap<Player, Integer>();
 	protected HashMap<Integer, Location> spawns = new HashMap<Integer, Location>();
 	protected Location lobby = null, finish;
@@ -40,7 +42,7 @@ public class Arena implements Runnable, Listener
 		Utils.saveLocation(cfs.createSection("finish"), finish);
 		cfs = cfs.createSection("spawns");
 		for(Entry<Integer, Location> akt : spawns.entrySet())
-			Utils.saveLocation(cfs.createSection(akt.getKey()+""), akt.getValue());
+			Utils.saveLocation(cfs.createSection(akt.getKey() + ""), akt.getValue());
 	}
 	
 	public void load(ConfigurationSection cfs)
@@ -91,7 +93,7 @@ public class Arena implements Runnable, Listener
 	public void start(int delay)
 	{
 		if(delay > 0)
-			Bukkit.getScheduler().scheduleSyncDelayedTask(main, this, 20L*delay);
+			Bukkit.getScheduler().scheduleSyncDelayedTask(main, this, ONE_SECOND * delay);
 		else
 			this.run();
 	}
@@ -115,10 +117,7 @@ public class Arena implements Runnable, Listener
 		p.teleport(lobby);
 		players.put(p, -1);
 		
-		// Heal Player
-		p.setHealth(20D);
-		p.setExhaustion(0F);
-		p.setSaturation(20F);
+		Utils.heal(p);
 		p.setGameMode(GameMode.SURVIVAL);
 		
 		if(score != null)

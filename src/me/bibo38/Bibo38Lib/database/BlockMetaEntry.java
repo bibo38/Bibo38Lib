@@ -13,12 +13,12 @@ import org.bukkit.block.Block;
 @Table(name = "BlockMeta")
 public class BlockMetaEntry
 {
-	@Id
-	private int id;
-	
 	public UUID world;
 	public int blockX, blockY, blockZ;
 	public HashMap<String, HashSet<Serializable>> meta = new HashMap<String, HashSet<Serializable>>();
+	
+	@Id
+	private int id;
 	
 	public BlockMetaEntry() {}
 	

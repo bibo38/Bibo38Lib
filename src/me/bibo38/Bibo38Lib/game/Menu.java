@@ -21,6 +21,9 @@ import java.util.HashSet;
 public class Menu extends Startfunc implements Listener
 {
 	private static int idCnt = 0;
+	
+	public boolean closeOnSelect = true;
+	
 	private int id;
 	private Inventory inv;
 	private HashSet<HumanEntity> canClose = new HashSet<HumanEntity>();
@@ -31,7 +34,6 @@ public class Menu extends Startfunc implements Listener
 	private int slots;
 	private ItemStack fillItem = null;
 	
-	public boolean closeOnSelect = true;
 	
 	public Menu(MenuListener l, boolean closeable, int slots)
 	{
@@ -102,16 +104,20 @@ public class Menu extends Startfunc implements Listener
 			{
 				switch(stacks.size())
 				{
-					case 1: fillStrategy = "--x"; break;
-					case 2: fillStrategy = "x--"; break;
-					case 3: fillStrategy = "x-x"; break;
-					case 4: fillStrategy = "xx-"; break;
+					case 1: fillStrategy = "--x";
+						break;
+					case 2: fillStrategy = "x--";
+						break;
+					case 3: fillStrategy = "x-x";
+						break;
+					case 4: fillStrategy = "xx-";
+						break;
 					default: fillStrategy = "xxx";
 				}
 				fillWithStrategy(0, stacks, fillStrategy);
 			} else
 			{
-				int partSize = (int) Math.ceil(stacks.size() / (double) (slots/9));
+				int partSize = (int) Math.ceil(stacks.size() / (double) (slots / 9));
 				
 				int avaible = stacks.size();
 				int i = 0;
@@ -120,17 +126,25 @@ public class Menu extends Startfunc implements Listener
 					int toAdd = Math.min(avaible, partSize);
 					switch(toAdd)
 					{
-						case 1: fillStrategy = "----x"; break;
-						case 2: fillStrategy = "x----"; break;
-						case 3: fillStrategy = "x---x"; break;
-						case 4: fillStrategy = "x-x--"; break;
-						case 5: fillStrategy = "x-x-x"; break;
-						case 6: fillStrategy = "x-xx-"; break;
-						case 7: fillStrategy = "x-xxx"; break;
-						case 8: fillStrategy = "xxxx-"; break;
+						case 1: fillStrategy = "----x";
+							break;
+						case 2: fillStrategy = "x----";
+							break;
+						case 3: fillStrategy = "x---x";
+							break;
+						case 4: fillStrategy = "x-x--";
+							break;
+						case 5: fillStrategy = "x-x-x";
+							break;
+						case 6: fillStrategy = "x-xx-";
+							break;
+						case 7: fillStrategy = "x-xxx";
+							break;
+						case 8: fillStrategy = "xxxx-";
+							break;
 						default: fillStrategy = "xxxxx";
 					}
-					fillWithStrategy(9*(i++), stacks, fillStrategy);
+					fillWithStrategy(9 * (i++), stacks, fillStrategy);
 					avaible -= toAdd;
 				}
 			}
@@ -153,7 +167,7 @@ public class Menu extends Startfunc implements Listener
 	public void setTitle(String title)
 	{
 		this.title = title;
-		ItemStack[] is = inv.getContents();
+		ItemStack is[] = inv.getContents();
 		if(inv.getType() == InventoryType.CHEST)
 			inv = Bukkit.createInventory(null, inv.getSize(), title);
 		else
@@ -171,7 +185,7 @@ public class Menu extends Startfunc implements Listener
 		if(slots < 5)
 			slots = 5;
 		else if(slots > 6 && slots % 9 != 0)
-			slots = 9*(slots/9 + 1);
+			slots = 9 * (slots / 9 + 1);
 		if(slots == 5)
 			inv = Bukkit.createInventory(null, InventoryType.HOPPER);
 		else
@@ -189,7 +203,8 @@ public class Menu extends Startfunc implements Listener
 	{
 		final HumanEntity p = e.getPlayer();
 		if(!closeable && e.getInventory().equals(inv) && !canClose.remove(p))
-			Bukkit.getScheduler().scheduleSyncDelayedTask(main, new Runnable() {
+			Bukkit.getScheduler().scheduleSyncDelayedTask(main, new Runnable()
+			{
 				@Override
 				public void run()
 				{
@@ -219,7 +234,8 @@ public class Menu extends Startfunc implements Listener
 				else
 					pl = null;
 				final Player p = pl;
-				Bukkit.getScheduler().scheduleSyncDelayedTask(main, new Runnable() {
+				Bukkit.getScheduler().scheduleSyncDelayedTask(main, new Runnable()
+				{
 					@Override
 					public void run()
 					{

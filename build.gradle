@@ -1,5 +1,8 @@
-apply plugin: 'java'
-apply plugin: 'eclipse'
+plugins {
+	id 'java'
+	id 'eclipse'
+	id 'checkstyle'
+}
 
 version = 1.2
 
@@ -30,3 +33,5 @@ dependencies {
 task wrapper(type: Wrapper) {
 	gradleVersion = '2.4'
 }
+
+apply from: 'config/checkstyle/checkstyle.gradle'

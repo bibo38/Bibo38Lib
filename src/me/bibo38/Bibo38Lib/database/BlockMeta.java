@@ -29,7 +29,7 @@ public class BlockMeta
 	public void reload()
 	{
 		entries.clear();
-		Object[] data = db.find(BlockMetaEntry.class).find();
+		Object data[] = db.find(BlockMetaEntry.class).find();
 		for(Object o : data)
 		{
 			BlockMetaEntry akt = (BlockMetaEntry) o;
