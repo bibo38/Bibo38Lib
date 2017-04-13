@@ -151,13 +151,40 @@ public final class Utils
 		if(cfs != null)
 			saveLocation(cfs.createSection(name), loc);
 	}
+
+	/**
+	 * Tries to load a minecraft world with the default generator.
+	 * If the world doesn't exist already, it will be loaded from the filesystem, if the
+	 * folder exists.
+	 *
+	 * @param name The world name
+	 * @return A {@link World} object, when successfully loaded. Otherwise null
+	 */
+	public static World loadWorld(String name)
+	{
+		World world = Bukkit.getWorld(name);
+		if(world != null)
+			return world;
+
+		File worldFolder = new File(Bukkit.getWorldContainer(), name);
+		if(!worldFolder.isDirectory()) // Implicit check for existence
+			return null; // No world folder. Prevents creating a new world
+
+		world = WorldCreator.name(name).createWorld();
+		return world;
+	}
 	
 	public static Location getLocation(ConfigurationSection cfg, String name)
 	{
 		cfg = cfg.getConfigurationSection(name);
 		if(cfg == null || !cfg.contains("world") || !cfg.contains("x") || !cfg.contains("y") || !cfg.contains("z"))
 			return null;
-		return new Location(Bukkit.getWorld(cfg.getString("world")),
+
+		World world = loadWorld(cfg.getString("world"));
+		if(world == null)
+			return null; // No world found!
+
+		return new Location(world,
 							 cfg.getDouble("x"),
 							 cfg.getDouble("y"),
 							 cfg.getDouble("z"));
