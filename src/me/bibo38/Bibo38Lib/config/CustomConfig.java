@@ -28,7 +28,7 @@ public class CustomConfig
 	 * 
 	 * @param file Die Datei
 	 * @param cfgName Der Dateiname als String (als Resource)
-	 * @param emain Das JavaPlugin
+	 * @param main Das JavaPlugin
 	 */
 	public CustomConfig(File file, String cfgName, JavaPlugin main)
 	{
@@ -40,7 +40,7 @@ public class CustomConfig
 	 * Konstruktor zum Erstellen einer eigenen Konfiguration
 	 * 
 	 * @param filestr Der Dateiname im Plugin Hauptverzeichnis
-	 * @param emain Das JavaPlugin
+	 * @param main Das JavaPlugin
 	 */
 	public CustomConfig(String filestr, JavaPlugin main)
 	{
@@ -83,6 +83,7 @@ public class CustomConfig
 		{
 			try
 			{
+				customCfgFile.getParentFile().mkdirs();
 				customCfgFile.createNewFile();
 			} catch(Exception e)
 			{
