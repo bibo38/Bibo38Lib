@@ -238,10 +238,12 @@ public final class Utils
 	public static ItemStack getSkullWithName(String name)
 	{
 		ItemStack i = new ItemStack(Material.SKULL_ITEM);
+		i.setDurability((short) SkullType.PLAYER.ordinal());
+
 		SkullMeta s = (SkullMeta) i.getItemMeta();
 		s.setOwner(name);
-		
 		i.setItemMeta(s);
+
 		return i;
 	}
 	
