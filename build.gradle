@@ -19,8 +19,4 @@ dependencies {
 	compile group: 'net.milkbowl.vault', name: 'VaultAPI', version: '1.5'
 }
 
-task wrapper(type: Wrapper) {
-	gradleVersion = '2.11'
-}
-
 apply from: 'config/checkstyle/checkstyle.gradle'
