@@ -5,10 +5,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.UUID;
 
-import javax.persistence.Id;
-import javax.persistence.Table;
-
 import org.bukkit.block.Block;
+
+import me.bibo38.Bibo38Lib.database.annotations.Id;
+import me.bibo38.Bibo38Lib.database.annotations.Table;
 
 @Table(name = "BlockMeta")
 public class BlockMetaEntry

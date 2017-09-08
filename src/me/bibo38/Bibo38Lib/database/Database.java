@@ -1,5 +1,6 @@
 package me.bibo38.Bibo38Lib.database;
 
+import java.beans.Transient;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -11,14 +12,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.TreeMap;
 
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-
 import me.bibo38.Bibo38Lib.Startfunc;
 import me.bibo38.Bibo38Lib.Utils;
-
-import com.avaje.ebean.validation.NotNull;
+import me.bibo38.Bibo38Lib.database.annotations.Id;
+import me.bibo38.Bibo38Lib.database.annotations.NotNull;
+import me.bibo38.Bibo38Lib.database.annotations.Table;
 
 public class Database extends Startfunc
 {
