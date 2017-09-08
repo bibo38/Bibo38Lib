@@ -1,8 +1,8 @@
 name: Bibo38Lib
 main: me.bibo38.Bibo38Lib.Bibo38Lib
-version: 1.0
+version: 1.1
 author: bibo38
-softdepend: [Vault, Spout]
+softdepend: [Vault]
 commands:
   bibo38lib:
     description: Type /bibo38lib help for all possible Commands

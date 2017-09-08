@@ -1,7 +1,6 @@
 lang: en
 helpcolor: e
 fullopperm: true
-webport: 0
 database:
   url: 'jdbc:mysql://localhost/minecraft'
   user: root
