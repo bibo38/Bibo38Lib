@@ -61,7 +61,7 @@ public class YamlOM<T>
 		@Override
 		protected Class<?> getClassForName(String name) throws ClassNotFoundException
 		{
-			Class<?> cl = super.getClassForName(name);
+			Class<?> cl = getClass().getClassLoader().loadClass(name);
 
 			if(cl.isAnnotationPresent(Configurable.class))
 				return cl;
