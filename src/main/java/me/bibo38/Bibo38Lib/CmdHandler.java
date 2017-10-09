@@ -25,8 +25,9 @@ public class CmdHandler extends Startfunc implements CommandListener
 	@Command(description = "Reloads the Config and Language", permissions = "reload")
 	public void reload()
 	{
-		YamlOM<Bibo38LibConfig> yaml = new YamlOM<>(Bibo38LibConfig.class, new File(main.getDataFolder(), "test.yml"));
-		yaml.saveToYaml(new Bibo38LibConfig());
+		Bibo38LibConfig biboCfg = new Bibo38LibConfig();
+		YamlOM<Bibo38LibConfig> yaml = new YamlOM<>(biboCfg, new File(main.getDataFolder(), "test.yml"));
+		yaml.save();
 
 		main.reloadConfig();
 		FileConfiguration cfg = main.getConfig();

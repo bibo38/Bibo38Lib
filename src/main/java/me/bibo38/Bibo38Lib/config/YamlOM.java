@@ -25,14 +25,13 @@ public class YamlOM<T>
 		YAML = new Yaml(new SafeConstructor(), new CleanRepresenter(), dumpOpt);
 	}
 	
-	private Class<T> cl;
+	private T obj;
 	private File file;
 
-	public YamlOM(Class<T> cl, File file)
+	public YamlOM(T obj, File file)
 	{
-		this.cl = Objects.requireNonNull(cl);
+		this.obj = Objects.requireNonNull(obj);
 		this.file = Objects.requireNonNull(file);
-
 		
 		try
 		{
@@ -46,7 +45,7 @@ public class YamlOM<T>
 			throw new IllegalArgumentException("File '" + file + "' cannot be written!");
 	}
 
-	public void saveToYaml(T obj)
+	public void save()
 	{
 		String fileData = YAML.dump(obj);
 
@@ -59,11 +58,12 @@ public class YamlOM<T>
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public T load()
 	{
 		try(Reader rd = new FileReader(file))
 		{
-			return YAML.loadAs(rd, cl);
+			return YAML.loadAs(rd, (Class<T>) obj.getClass());
 		} catch (FileNotFoundException e)
 		{
 			e.printStackTrace();
