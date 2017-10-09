@@ -25,13 +25,12 @@ public class CmdHandler extends Startfunc implements CommandListener
 	@Command(description = "Reloads the Config and Language", permissions = "reload")
 	public void reload()
 	{
-		YamlOM<Bibo38LibConfig> yaml = new YamlOM<>(Bibo38LibConfig.class, new File(main.getDataFolder(), "config.yml"));
-		Bibo38LibConfig newCfg = yaml.load();
-		System.out.println("The Database URL is " + newCfg.database.url);
+		YamlOM<Bibo38LibConfig> yaml = new YamlOM<>(Bibo38LibConfig.class, new File(main.getDataFolder(), "test.yml"));
+		yaml.saveToYaml(new Bibo38LibConfig());
 
 		main.reloadConfig();
 		FileConfiguration cfg = main.getConfig();
-		main.lang.setLang(newCfg.lang);
+		main.lang.setLang(cfg.getString("lang"));
 		CommandHandler.updateColor();
 		
 		ConfigurationSection jdbc = cfg.getConfigurationSection("database");

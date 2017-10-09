@@ -1,6 +1,7 @@
 package me.bibo38.Bibo38Lib.config;
 
 import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.DumperOptions.FlowStyle;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.nodes.Node;
@@ -13,8 +14,17 @@ import java.util.Objects;
 
 public class YamlOM<T>
 {
-	private static final Yaml YAML = new Yaml(new SafeConstructor(), new CleanRepresenter());
-
+	private static final Yaml YAML;
+	
+	static
+	{
+		DumperOptions dumpOpt = new DumperOptions();
+		dumpOpt.setDefaultFlowStyle(FlowStyle.BLOCK);
+		dumpOpt.setAllowUnicode(true);
+		
+		YAML = new Yaml(new SafeConstructor(), new CleanRepresenter(), dumpOpt);
+	}
+	
 	private Class<T> cl;
 	private File file;
 
@@ -23,6 +33,15 @@ public class YamlOM<T>
 		this.cl = Objects.requireNonNull(cl);
 		this.file = Objects.requireNonNull(file);
 
+		
+		try
+		{
+			file.createNewFile();
+		} catch (IOException e)
+		{
+			throw new RuntimeException("Cannot create file " + file, e);
+		}
+		
 		if(!file.canWrite())
 			throw new IllegalArgumentException("File '" + file + "' cannot be written!");
 	}
@@ -74,8 +93,6 @@ public class YamlOM<T>
 	{
 		private CleanRepresenter()
 		{
-			setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
-
 			Represent oldDefaultRepresenter = representers.get(null);
 			representers.put(null, obj ->
 			{
