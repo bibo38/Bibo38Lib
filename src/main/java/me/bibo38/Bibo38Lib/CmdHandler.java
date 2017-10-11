@@ -27,7 +27,8 @@ public class CmdHandler extends Startfunc implements CommandListener
 	{
 		Bibo38LibConfig biboCfg = new Bibo38LibConfig();
 		YamlOM<Bibo38LibConfig> yaml = new YamlOM<>(biboCfg, new File(main.getDataFolder(), "test.yml"));
-		yaml.save();
+		yaml.load();
+		System.out.println(biboCfg.lang);
 
 		main.reloadConfig();
 		FileConfiguration cfg = main.getConfig();

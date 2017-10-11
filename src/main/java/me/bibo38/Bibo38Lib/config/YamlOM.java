@@ -6,8 +6,10 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.DumperOptions.FlowStyle;
@@ -16,6 +18,9 @@ import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.Tag;
 import org.yaml.snakeyaml.representer.Represent;
 import org.yaml.snakeyaml.representer.Representer;
+
+import me.bibo38.Bibo38Lib.config.converter.BooleanConverter;
+import me.bibo38.Bibo38Lib.config.converter.CharConverter;
 
 public class YamlOM<T>
 {
@@ -32,6 +37,7 @@ public class YamlOM<T>
 	
 	private T obj;
 	private File file;
+	private Map<Class<?>, Converter<?>> converters = new HashMap<>();
 
 	public YamlOM(T obj, File file)
 	{
@@ -48,6 +54,18 @@ public class YamlOM<T>
 		
 		if(!file.canWrite())
 			throw new IllegalArgumentException("File '" + file + "' cannot be written!");
+		
+		
+		// Default converters
+		setConverter(char.class, CharConverter.INSTANCE);
+		setConverter(Character.class, CharConverter.INSTANCE);
+		setConverter(boolean.class, BooleanConverter.INSTANCE);
+		setConverter(Boolean.class, BooleanConverter.INSTANCE);
+	}
+	
+	public void setConverter(Class<?> cl, Converter<?> conv)
+	{
+		converters.put(Objects.requireNonNull(cl), Objects.requireNonNull(conv));
 	}
 
 	public void save()
@@ -64,7 +82,7 @@ public class YamlOM<T>
 	}
 
 	@SuppressWarnings("unchecked")
-	private static void loadMapIntoObject(Object goal, Map<String, Object> data)
+	private void loadMapIntoObject(Object goal, Map<String, Object> data)
 	{
 		for(ConfigurableField f : ConfigurableField.fromClass(goal.getClass()))
 		{
@@ -77,7 +95,13 @@ public class YamlOM<T>
 			else if(value instanceof Map)
 				loadMapIntoObject(f.getValue(goal), (Map<String, Object>) value);
 			else
-				throw new RuntimeException("Cannot convert a value " + value + " of type " + value.getClass() + " into a field of the type " + f.getType());
+			{
+				Optional<?> convertedValue = Optional.empty();
+				if(converters.containsKey(f.getType()))
+					convertedValue = converters.get(f.getType()).convertFrom(value);
+				
+				f.setValue(goal, convertedValue.orElseThrow(() -> new RuntimeException("Cannot convert a value " + value + " of type " + value.getClass() + " into a field of the type " + f.getType())));
+			}
 		}
 	}
 	
