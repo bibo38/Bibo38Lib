@@ -20,7 +20,7 @@ public interface StreamProvider
 	void withReader(IOOperation<Reader> operation);
 
 	@FunctionalInterface
-	public static interface IOOperation<T>
+	interface IOOperation<T>
 	{
 		void execute(T obj) throws IOException;
 	}

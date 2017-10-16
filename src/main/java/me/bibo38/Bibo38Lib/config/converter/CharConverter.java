@@ -1,10 +1,10 @@
 package me.bibo38.Bibo38Lib.config.converter;
 
-import java.util.Optional;
-
 import me.bibo38.Bibo38Lib.config.Converter;
 
-public class CharConverter implements Converter<Character>
+import java.util.Optional;
+
+public final class CharConverter implements Converter<Character>
 {
 	public static final CharConverter INSTANCE = new CharConverter();
 	

@@ -4,7 +4,7 @@ import me.bibo38.Bibo38Lib.config.Converter;
 
 import java.util.Optional;
 
-public class IntegerConverter implements Converter<Integer>
+public final class IntegerConverter implements Converter<Integer>
 {
 	public static final IntegerConverter INSTANCE = new IntegerConverter();
 

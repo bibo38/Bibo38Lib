@@ -18,7 +18,7 @@ import java.util.Optional;
  * field values through setters and getters.
  * Furthermore it ignores transient fields.
  */
-public class ConfigurableField
+public final class ConfigurableField
 {
 	private Field field;
 	private Optional<Method> setter;
@@ -42,9 +42,9 @@ public class ConfigurableField
 		
 		try
 		{
-			Method getter = cl.getDeclaredMethod("get" + suffix);
-			if(getter.getReturnType() == field.getType())
-				this.getter = Optional.of(getter);
+			Method getterMethod = cl.getDeclaredMethod("get" + suffix);
+			if(getterMethod.getReturnType() == field.getType())
+				this.getter = Optional.of(getterMethod);
 			else
 				this.getter = Optional.empty();	
 		} catch (NoSuchMethodException e)
