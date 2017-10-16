@@ -2,6 +2,7 @@ package me.bibo38.Bibo38Lib.config;
 
 import me.bibo38.Bibo38Lib.config.converter.BooleanConverter;
 import me.bibo38.Bibo38Lib.config.converter.CharConverter;
+import me.bibo38.Bibo38Lib.config.converter.IntegerConverter;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.DumperOptions.FlowStyle;
 import org.yaml.snakeyaml.Yaml;
@@ -43,6 +44,8 @@ public class YamlOM
 		setConverter(Character.class, CharConverter.INSTANCE);
 		setConverter(boolean.class, BooleanConverter.INSTANCE);
 		setConverter(Boolean.class, BooleanConverter.INSTANCE);
+		setConverter(int.class, IntegerConverter.INSTANCE);
+		setConverter(Integer.class, IntegerConverter.INSTANCE);
 	}
 
 	public YamlOM(Object obj, File file)
@@ -61,9 +64,21 @@ public class YamlOM
 		streamProvider.withWriter(writer -> writer.write(fileData));
 	}
 
+	private static void checkClassConfigurable(Class<?> cl)
+	{
+		if(!cl.isAnnotationPresent(Configurable.class))
+			throw new IllegalArgumentException("Class " + cl.getCanonicalName() + " is not annotated " +
+					"with the Configurable interface");
+	}
+
 	@SuppressWarnings("unchecked")
 	private void loadMapIntoObject(Object goal, Map<String, Object> data)
 	{
+		checkClassConfigurable(goal.getClass());
+
+		if(data == null)
+			return;
+
 		for(ConfigurableField f : ConfigurableField.fromClass(goal.getClass()))
 		{
 			if(!data.containsKey(f.getName()))
@@ -98,9 +113,7 @@ public class YamlOM
 			Represent oldDefaultRepresenter = representers.get(null);
 			representers.put(null, obj ->
 			{
-				if(!obj.getClass().isAnnotationPresent(Configurable.class))
-					throw new IllegalArgumentException("Class " + obj.getClass().getCanonicalName() + " is not annotated " +
-							"with the Configurable interface");
+				checkClassConfigurable(obj.getClass());
 
 				Node ret = oldDefaultRepresenter.representData(obj);
 				ret.setTag(Tag.MAP);
