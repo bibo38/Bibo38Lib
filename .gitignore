@@ -20,6 +20,7 @@ nbproject/private/
 .gradle
 .idea
 *.iml
+out
 
 #ignore generated .class files
 *.class
