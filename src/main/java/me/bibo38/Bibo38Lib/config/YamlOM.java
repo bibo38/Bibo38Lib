@@ -1,16 +1,7 @@
 package me.bibo38.Bibo38Lib.config;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Reader;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-
+import me.bibo38.Bibo38Lib.config.converter.BooleanConverter;
+import me.bibo38.Bibo38Lib.config.converter.CharConverter;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.DumperOptions.FlowStyle;
 import org.yaml.snakeyaml.Yaml;
@@ -19,10 +10,13 @@ import org.yaml.snakeyaml.nodes.Tag;
 import org.yaml.snakeyaml.representer.Represent;
 import org.yaml.snakeyaml.representer.Representer;
 
-import me.bibo38.Bibo38Lib.config.converter.BooleanConverter;
-import me.bibo38.Bibo38Lib.config.converter.CharConverter;
+import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
-public class YamlOM<T>
+public class YamlOM
 {
 	private static final Yaml YAML;
 	
@@ -35,32 +29,25 @@ public class YamlOM<T>
 		YAML = new Yaml(new CleanRepresenter(), dumpOpt);
 	}
 	
-	private T obj;
-	private File file;
+	private Object obj;
+	private StreamProvider streamProvider;
 	private Map<Class<?>, Converter<?>> converters = new HashMap<>();
 
-	public YamlOM(T obj, File file)
+	public YamlOM(Object obj, StreamProvider streamProvider)
 	{
 		this.obj = Objects.requireNonNull(obj);
-		this.file = Objects.requireNonNull(file);
-		
-		try
-		{
-			file.createNewFile();
-		} catch (IOException e)
-		{
-			throw new RuntimeException("Cannot create file " + file, e);
-		}
-		
-		if(!file.canWrite())
-			throw new IllegalArgumentException("File '" + file + "' cannot be written!");
-		
-		
+		this.streamProvider = Objects.requireNonNull(streamProvider);
+
 		// Default converters
 		setConverter(char.class, CharConverter.INSTANCE);
 		setConverter(Character.class, CharConverter.INSTANCE);
 		setConverter(boolean.class, BooleanConverter.INSTANCE);
 		setConverter(Boolean.class, BooleanConverter.INSTANCE);
+	}
+
+	public YamlOM(Object obj, File file)
+	{
+		this(obj, new FileStreamProvider(file));
 	}
 	
 	public void setConverter(Class<?> cl, Converter<?> conv)
@@ -71,14 +58,7 @@ public class YamlOM<T>
 	public void save()
 	{
 		String fileData = YAML.dump(obj);
-
-		try(FileWriter writer = new FileWriter(file))
-		{
-			writer.write(fileData);
-		} catch (IOException e)
-		{
-			e.printStackTrace();
-		}
+		streamProvider.withWriter(writer -> writer.write(fileData));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -108,17 +88,7 @@ public class YamlOM<T>
 	@SuppressWarnings("unchecked")
 	public void load()
 	{
-		try(Reader rd = new FileReader(file))
-		{
-			loadMapIntoObject(obj, YAML.loadAs(rd, Map.class));
-			
-		} catch (FileNotFoundException e)
-		{
-			e.printStackTrace();
-		} catch (IOException e)
-		{
-			e.printStackTrace();
-		}
+		streamProvider.withReader(rd -> loadMapIntoObject(obj, YAML.loadAs(rd, Map.class)));
 	}
 
 	private static final class CleanRepresenter extends Representer
@@ -128,9 +98,12 @@ public class YamlOM<T>
 			Represent oldDefaultRepresenter = representers.get(null);
 			representers.put(null, obj ->
 			{
+				if(!obj.getClass().isAnnotationPresent(Configurable.class))
+					throw new IllegalArgumentException("Class " + obj.getClass().getCanonicalName() + " is not annotated " +
+							"with the Configurable interface");
+
 				Node ret = oldDefaultRepresenter.representData(obj);
-				if(obj.getClass().isAnnotationPresent(Configurable.class))
-					ret.setTag(Tag.MAP);
+				ret.setTag(Tag.MAP);
 				return ret;
 			});
 		}
