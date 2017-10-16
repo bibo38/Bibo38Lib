@@ -4,7 +4,6 @@ import me.bibo38.Bibo38Lib.command.Command;
 import me.bibo38.Bibo38Lib.command.CommandHandler;
 import me.bibo38.Bibo38Lib.command.CommandListener;
 import me.bibo38.Bibo38Lib.command.Optional;
-import me.bibo38.Bibo38Lib.config.YamlOM;
 import me.bibo38.Bibo38Lib.database.BlockMeta;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -15,7 +14,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 
-import java.io.File;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.TreeMap;
@@ -25,11 +23,6 @@ public class CmdHandler extends Startfunc implements CommandListener
 	@Command(description = "Reloads the Config and Language", permissions = "reload")
 	public void reload()
 	{
-		Bibo38LibConfig biboCfg = new Bibo38LibConfig();
-		YamlOM<Bibo38LibConfig> yaml = new YamlOM<>(biboCfg, new File(main.getDataFolder(), "test.yml"));
-		yaml.load();
-		System.out.println(biboCfg.lang);
-
 		main.reloadConfig();
 		FileConfiguration cfg = main.getConfig();
 		main.lang.setLang(cfg.getString("lang"));
