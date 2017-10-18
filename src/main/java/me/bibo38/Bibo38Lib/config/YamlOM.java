@@ -3,15 +3,19 @@ package me.bibo38.Bibo38Lib.config;
 import me.bibo38.Bibo38Lib.config.converter.BooleanConverter;
 import me.bibo38.Bibo38Lib.config.converter.CharConverter;
 import me.bibo38.Bibo38Lib.config.converter.IntegerConverter;
+import me.bibo38.Bibo38Lib.config.converter.ShortConverter;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.DumperOptions.FlowStyle;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.introspector.BeanAccess;
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.Tag;
 import org.yaml.snakeyaml.representer.Represent;
 import org.yaml.snakeyaml.representer.Representer;
 
-import java.io.*;
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -26,8 +30,9 @@ public class YamlOM
 		DumperOptions dumpOpt = new DumperOptions();
 		dumpOpt.setDefaultFlowStyle(FlowStyle.BLOCK);
 		dumpOpt.setAllowUnicode(true);
-		
+
 		YAML = new Yaml(new CleanRepresenter(), dumpOpt);
+		YAML.setBeanAccess(BeanAccess.FIELD);
 	}
 	
 	private Object obj;
@@ -46,6 +51,8 @@ public class YamlOM
 		setConverter(Boolean.class, BooleanConverter.INSTANCE);
 		setConverter(int.class, IntegerConverter.INSTANCE);
 		setConverter(Integer.class, IntegerConverter.INSTANCE);
+		setConverter(short.class, ShortConverter.INSTANCE);
+		setConverter(Short.class, ShortConverter.INSTANCE);
 	}
 
 	public YamlOM(Object obj, File file)
@@ -83,10 +90,12 @@ public class YamlOM
 		{
 			if(!data.containsKey(f.getName()))
 				continue;
-			
+
 			Object value = data.get(f.getName());
-			if(f.getType().isAssignableFrom(value.getClass()))
+			if(value == null || f.getType().isAssignableFrom(value.getClass()))
 				f.setValue(goal, value);
+			else if(ConfigurationSerializable.class.isAssignableFrom(f.getType()) && value instanceof Map)
+				f.setValue(goal, ConfigurationSerialization.deserializeObject((Map<String, ?>) value));
 			else if(value instanceof Map)
 				loadMapIntoObject(f.getValue(goal), (Map<String, Object>) value);
 			else
@@ -113,6 +122,9 @@ public class YamlOM
 			Represent oldDefaultRepresenter = representers.get(null);
 			representers.put(null, obj ->
 			{
+				if(obj instanceof ConfigurationSerializable)
+					return representMapping(Tag.MAP, ((ConfigurationSerializable) obj).serialize(), false);
+
 				checkClassConfigurable(obj.getClass());
 
 				Node ret = oldDefaultRepresenter.representData(obj);
