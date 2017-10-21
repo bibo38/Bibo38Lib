@@ -1,16 +1,15 @@
 package me.bibo38.Bibo38Lib.config;
 
+import me.bibo38.Bibo38Lib.config.converter.ChatMessageConverter;
 import me.bibo38.Bibo38Lib.config.converter.ConfigurationSerializableConverter;
+import me.bibo38.Bibo38Lib.config.utility.ChatMessage;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.DumperOptions.FlowStyle;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.introspector.BeanAccess;
-import org.yaml.snakeyaml.nodes.MappingNode;
-import org.yaml.snakeyaml.nodes.Node;
-import org.yaml.snakeyaml.nodes.NodeId;
-import org.yaml.snakeyaml.nodes.Tag;
+import org.yaml.snakeyaml.nodes.*;
 import org.yaml.snakeyaml.representer.Represent;
 import org.yaml.snakeyaml.representer.Representer;
 
@@ -36,6 +35,7 @@ public class YamlOM
 
 		// Default converters
 		setConverter(ConfigurationSerializable.class, new ConfigurationSerializableConverter());
+		setConverter(ChatMessage.class, new ChatMessageConverter());
 
 		// YAML initialisation
 		DumperOptions dumpOpt = new DumperOptions();
@@ -50,8 +50,8 @@ public class YamlOM
 	{
 		this(obj, new FileStreamProvider(file));
 	}
-	
-	public <T> void setConverter(Class<T> cl, Converter<T> conv)
+
+	public <T> void setConverter(Class<T> cl, Converter<? super T> conv)
 	{
 		converters.put(Objects.requireNonNull(cl), Objects.requireNonNull(conv));
 		converterCache.clear(); // Because converters are mosly added at the start, this is faster than only clearing Optional.empty values
@@ -121,6 +121,7 @@ public class YamlOM
 		private SafeConstructor()
 		{
 			yamlClassConstructors.put(NodeId.mapping, new MyMappingConstructor());
+			yamlClassConstructors.put(NodeId.scalar, new MyScalarConstructor());
 		}
 
 		@Override
@@ -149,6 +150,18 @@ public class YamlOM
 					return object; // Already constructed in the empty phase
 
 				return super.constructJavaBean2ndStep(node, object);
+			}
+		}
+
+		private class MyScalarConstructor extends ConstructScalar
+		{
+			@SuppressWarnings("unchecked")
+			@Override
+			public Object construct(Node nnode)
+			{
+				return getConverter(nnode.getType())
+						.map(conv -> conv.deserialize((Class) nnode.getType(), constructScalar((ScalarNode) nnode)))
+						.orElseGet(() -> super.construct(nnode));
 			}
 		}
 	}
