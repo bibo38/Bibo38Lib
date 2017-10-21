@@ -10,17 +10,6 @@ public class FileStreamProvider implements StreamProvider
 	public FileStreamProvider(File file)
 	{
 		this.file = Objects.requireNonNull(file);
-
-		try
-		{
-			file.createNewFile();
-		} catch (IOException e)
-		{
-			throw new RuntimeException("Cannot create file " + file, e);
-		}
-
-		if(!file.canWrite())
-			throw new IllegalArgumentException("File '" + file + "' cannot be written!");
 	}
 
 	@Override

@@ -49,6 +49,9 @@ public class YamlOM
 	public YamlOM(Object obj, File file)
 	{
 		this(obj, new FileStreamProvider(file));
+
+		if(!file.exists())
+			save();
 	}
 
 	public <T> void setConverter(Class<T> cl, Converter<? super T> conv)
