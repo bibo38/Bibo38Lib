@@ -72,8 +72,13 @@ public final class FileChangeConfigReloader implements Listener
 	 */
 	private void doReload()
 	{
-		plugin.reloadConfig();
-		doReloadTask = null;
+		try
+		{
+			plugin.reloadConfig();
+		} finally
+		{
+			doReloadTask = null;
+		}
 	}
 
 	@EventHandler
