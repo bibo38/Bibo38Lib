@@ -44,8 +44,8 @@ public final class Compability
 			{
 				case UTF8:
 					String text = dis.readUTF();
-					text = text.replaceAll("net/minecraft/server/[^/]+", "net/minecraft/server/" + packageVersion).
-								replaceAll("org/bukkit/craftbukkit/[^/]+", "org/bukkit/craftbukkit/" + packageVersion);
+					text = text.replaceAll("net/minecraft/server/[^/]+", "net/minecraft/server/" + packageVersion)
+					           .replaceAll("org/bukkit/craftbukkit/[^/]+", "org/bukkit/craftbukkit/" + packageVersion);
 					dos.writeUTF(text);
 					break;
 					
