@@ -27,13 +27,13 @@ public class YamlOMTest
 	}
 
 	@Test
-	public void testTransientFieldsNotChanged()
+	public void testTransientFieldsCannotBeChanged()
 	{
 		StringStreamProvider provider = new StringStreamProvider("works: y\nx: 7");
 		EasyConfig cfg = new EasyConfig('n', 33);
-		new YamlOM(cfg, provider).load();
+		Assertions.assertThrows(RuntimeException.class, new YamlOM(cfg, provider)::load);
 
-		Assertions.assertEquals('y', cfg.works);
+		Assertions.assertEquals('n', cfg.works);
 		Assertions.assertEquals(33, cfg.x);
 	}
 
@@ -48,11 +48,11 @@ public class YamlOMTest
 	}
 
 	@Test
-	public void testNoOverwriteWhenDataNotMatchingClass()
+	public void testExceptionWhenDataNotMatchingClass()
 	{
 		StringStreamProvider provider = new StringStreamProvider("blablabla: 7");
 		EasyConfig cfg = new EasyConfig('n');
-		new YamlOM(cfg, provider).load();
+		Assertions.assertThrows(RuntimeException.class, new YamlOM(cfg, provider)::load);
 
 		Assertions.assertEquals('n', cfg.works);
 	}
@@ -68,6 +68,6 @@ public class YamlOMTest
 	public void testReadingNonConfigurableObject()
 	{
 		StringStreamProvider provider = new StringStreamProvider("i: 7");
-		Assertions.assertThrows(IllegalArgumentException.class, new YamlOM(new NotConfigurable(), provider)::load);
+		Assertions.assertThrows(RuntimeException.class, new YamlOM(new NotConfigurable(), provider)::load);
 	}
 }

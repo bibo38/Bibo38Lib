@@ -8,6 +8,13 @@ public class EasyConfig
 	public transient int x = 5;
 	public char works;
 
+	/**
+	 * Required for the configuration
+	 */
+	private EasyConfig()
+	{
+	}
+
 	public EasyConfig(char works, int x)
 	{
 		this.works = works;
