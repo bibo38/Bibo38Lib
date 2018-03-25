@@ -1,6 +1,5 @@
 package me.bibo38.Bibo38Lib.game;
 
-import me.bibo38.Bibo38Lib.Startfunc;
 import me.bibo38.Bibo38Lib.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -14,46 +13,44 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Objects;
 
-public class Menu extends Startfunc implements Listener
+public class Menu implements Listener
 {
-	private static int idCnt = 0;
-	
 	public boolean closeOnSelect = true;
-	
-	private int id;
+
 	private Inventory inv;
 	private HashSet<HumanEntity> canClose = new HashSet<HumanEntity>();
 	private MenuListener l;
 	
 	private String title = "";
-	private boolean closeable;
+	private boolean closeable = true;
 	private int slots;
 	private ItemStack fillItem = null;
+	private transient Plugin plugin;
 	
 	
-	public Menu(MenuListener l, boolean closeable, int slots)
+	public Menu(MenuListener l, Plugin plugin)
 	{
-		this.l = l;
-		this.closeable = closeable;
-		this.setSlots(slots);
-		
-		id = idCnt++;
-		Bukkit.getPluginManager().registerEvents(this, main);
+		this.l = Objects.requireNonNull(l);
+		this.plugin = Objects.requireNonNull(plugin);
+
+		plugin.getServer().getPluginManager().registerEvents(this, plugin);
+		setSlots(1);
 	}
-	
-	public int getId()
-	{
-		return id;
-	}
-	
+
 	public void setOption(int slot, ItemStack is)
 	{
-		if(slot < 0 || slot >= slots)
-			slot = inv.firstEmpty();
+		if(slot < 0)
+			throw new IllegalArgumentException("Negative Slots cannot be set: Tried " + slot);
+
+		if(slot >= inv.getSize())
+			setSlots(slot + 1);
+
 		inv.setItem(slot, is);
 	}
 	
@@ -154,8 +151,7 @@ public class Menu extends Startfunc implements Listener
 	
 	public void clearOptions()
 	{
-		for(int i = 0; i < slots; i++)
-			inv.setItem(i, null);
+		inv.clear();
 		setEmptySlot(fillItem);
 	}
 	
@@ -167,12 +163,7 @@ public class Menu extends Startfunc implements Listener
 	public void setTitle(String title)
 	{
 		this.title = title;
-		ItemStack is[] = inv.getContents();
-		if(inv.getType() == InventoryType.CHEST)
-			inv = Bukkit.createInventory(null, inv.getSize(), title);
-		else
-			inv = Bukkit.createInventory(null, inv.getType(), title);
-		inv.setContents(is);
+		recreateInventory();
 	}
 	
 	public String getTitle()
@@ -182,15 +173,25 @@ public class Menu extends Startfunc implements Listener
 	
 	public void setSlots(int slots)
 	{
-		if(slots < 5)
+		if(slots <= 5)
 			slots = 5;
-		else if(slots > 6 && slots % 9 != 0)
+		else if(slots % 9 != 0)
 			slots = 9 * (slots / 9 + 1);
+
+		this.slots = slots;
+		recreateInventory();
+	}
+
+	private void recreateInventory()
+	{
+		ItemStack is[] = (inv != null) ? inv.getContents() : new ItemStack[0];
+
+		assert slots == 5 || (slots % 9 == 0) : "Wrong Slot size";
 		if(slots == 5)
-			inv = Bukkit.createInventory(null, InventoryType.HOPPER);
+			inv = Bukkit.createInventory(null, InventoryType.HOPPER, title);
 		else
 			inv = Bukkit.createInventory(null, slots, title);
-		this.slots = slots;
+		inv.setContents(is);
 	}
 	
 	public void deregister()
@@ -201,49 +202,43 @@ public class Menu extends Startfunc implements Listener
 	@EventHandler
 	public void onClose(InventoryCloseEvent e)
 	{
+		if(closeable || !e.getInventory().equals(inv))
+			return;
+
 		final HumanEntity p = e.getPlayer();
-		if(!closeable && e.getInventory().equals(inv) && !canClose.remove(p))
-			Bukkit.getScheduler().scheduleSyncDelayedTask(main, new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					if(p instanceof Player)
-						showMenu((Player) p);
-				}
+		if(p instanceof Player && !canClose.remove(p))
+		{
+			plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+				showMenu((Player) p);
 			});
+		}
 	}
 	
 	@EventHandler
 	public void onClick(final InventoryClickEvent e)
 	{
-		if(e.getInventory().equals(inv))
-		{
-			e.setCancelled(true);
-			if(e.getView().getItem(e.getRawSlot()) != null && e.getView().getItem(e.getRawSlot()).equals(inv.getItem(e.getSlot())) && !inv.getItem(e.getSlot()).equals(fillItem))
-			{
-				if(!closeable)
-					canClose.add(e.getWhoClicked());
-				
-				if(closeOnSelect)
-					e.getWhoClicked().closeInventory();
-				
-				Player pl;
-				if(e.getWhoClicked() instanceof Player)
-					pl = (Player) e.getWhoClicked();
-				else
-					pl = null;
-				final Player p = pl;
-				Bukkit.getScheduler().scheduleSyncDelayedTask(main, new Runnable()
-				{
-					@Override
-					public void run()
-					{
-						if(l != null)
-							l.onItemClick(id, e.getSlot(), inv.getItem(e.getSlot()), p);
-					}
-				});
-			}
-		}
+		if(!e.getInventory().equals(inv))
+			return;
+
+		if (!(e.getWhoClicked() instanceof Player))
+			return;
+		Player p = (Player) e.getWhoClicked();
+
+		e.setCancelled(true);
+
+		ItemStack clickedItem = e.getView().getItem(e.getRawSlot());
+		ItemStack inventoryItem = inv.getItem(e.getSlot());
+		if(clickedItem == null || !clickedItem.equals(inventoryItem) || fillItem.equals(inventoryItem))
+			return;
+
+		if (!closeable)
+			canClose.add(p);
+
+		if (closeOnSelect)
+			p.closeInventory();
+
+		plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+			l.onItemClick(e.getSlot(), inv.getItem(e.getSlot()), p);
+		});
 	}
 }
